@@ -24,8 +24,12 @@ function getApiBase(): string {
     return "/api/v1";
   }
   // When running server-side (SSR / build), route to the internal backend URL
-  const internalBackend =
+  const rawBackend =
     process.env.BACKEND_INTERNAL_URL || "http://127.0.0.1:8000";
+  const internalBackend =
+    rawBackend.startsWith("http://") || rawBackend.startsWith("https://")
+      ? rawBackend
+      : `https://${rawBackend}`;
   return `${internalBackend}/api/v1`;
 }
 

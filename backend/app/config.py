@@ -25,15 +25,30 @@ class Settings:
     ALLOW_DEV_USER_OVERRIDE: bool = os.getenv("ALLOW_DEV_USER_OVERRIDE", "false").lower() in ("true", "1", "yes")
     
     # CORS
-    CORS_ORIGINS: list[str] = (
-        [origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()]
-        if os.getenv("CORS_ORIGINS")
-        else [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "http://localhost:3001",
-            "http://127.0.0.1:3001",
-        ]
-    )
+    @staticmethod
+    def _parse_cors_origins(raw_origins: str | None) -> list[str]:
+        if not raw_origins:
+            return [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3001",
+                "http://127.0.0.1:3001",
+            ]
+        parsed: list[str] = []
+        for item in raw_origins.split(","):
+            origin = item.strip()
+            if not origin:
+                continue
+            if origin.startswith("http://") or origin.startswith("https://"):
+                parsed.append(origin)
+            else:
+                # Render fromService.property: host yields bare hostname without scheme
+                parsed.append(f"https://{origin}")
+                parsed.append(f"http://{origin}")
+        return parsed
+
+    @property
+    def CORS_ORIGINS(self) -> list[str]:
+        return self._parse_cors_origins(os.getenv("CORS_ORIGINS"))
 
 settings = Settings()
