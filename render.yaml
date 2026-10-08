@@ -1,19 +1,15 @@
 services:
-  # Backend FastAPI Service with Persistent Disk for SQLite
+  # Backend FastAPI Service (Render Free tier with ephemeral SQLite)
   - type: web
     name: duolingo-backend
     env: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    plan: starter
-    disk:
-      name: duolingo-db-data
-      mountPath: /var/data
-      sizeGB: 1
+    plan: free
     envVars:
       - key: DATABASE_URL
-        value: sqlite:////var/data/duolingo.db
+        value: sqlite:///./duolingo.db
       - key: DEFAULT_TIMEZONE
         value: Asia/Kolkata
       - key: MAX_HEARTS

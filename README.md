@@ -290,13 +290,24 @@ NEXT_PUBLIC_API_URL=
 
 ## 12. Deployment Instructions
 
-1. **Backend Deployment (e.g. Render, Railway, Fly.io, Docker)**:
-   - Command: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
-   - Set `CORS_ORIGINS` to the deployed frontend domain.
-2. **Frontend Deployment (e.g. Vercel, Netlify)**:
-   - Root directory: `frontend`
-   - Set `BACKEND_INTERNAL_URL` to the public or private URL of your deployed backend (e.g. `https://my-backend.onrender.com`).
-   - The Next.js reverse proxy (`/api/v1/:path*`) automatically forwards requests to the configured backend.
+### Render Free Tier Deployment (Automated Blueprint)
+The project includes a root `render.yaml` Blueprint configured 100% for **Render Free tier** (`plan: free` for both services, zero cost, no persistent disks or paid add-ons required):
+
+1. **Deploy with Blueprint**:
+   - Push repository to GitHub.
+   - In Render Dashboard, click **New +** -> **Blueprint**.
+   - Connect this GitHub repository (`kashvimittal02/duolingo-web-app`).
+   - Render automatically provisions:
+     - `duolingo-backend`: Python Web Service (`plan: free`, `rootDir: backend`, `startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT`).
+     - `duolingo-frontend`: Node.js Web Service (`plan: free`, `rootDir: frontend`, `startCommand: npm run start`).
+2. **Ephemeral SQLite on Render Free**:
+   - Render Free tier web services use an ephemeral filesystem (`DATABASE_URL=sqlite:///./duolingo.db`).
+   - Persistent disks are not available on the free tier. When the free backend service restarts or wakes from inactivity spin-down, the application's runtime `lifespan` hook automatically checks if the database is empty and idempotently initializes the schema and seeds the default curriculum and learner (`duo_learner`).
+   - No build-time database generation or paid database migrations are required.
+3. **Networking & CORS**:
+   - `BACKEND_INTERNAL_URL` is automatically wired via Render's service discovery (`property: host`).
+   - The Next.js reverse proxy (`/api/:path*`) routes client traffic securely to the FastAPI backend without exposing localhost.
+   - `CORS_ORIGINS` is automatically configured to accept requests from the deployed frontend origin without wildcard CORS.
 
 ---
 
