@@ -1,0 +1,50 @@
+services:
+  # Backend FastAPI Service with Persistent Disk for SQLite
+  - type: web
+    name: duolingo-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python -m app.seeds.seeder
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: starter
+    disk:
+      name: duolingo-db-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////var/data/duolingo.db
+      - key: DEFAULT_TIMEZONE
+        value: Asia/Kolkata
+      - key: MAX_HEARTS
+        value: "5"
+      - key: HEART_REGEN_SECONDS
+        value: "1800"
+      - key: BASE_LESSON_XP
+        value: "15"
+      - key: REPLAY_LESSON_XP
+        value: "5"
+      - key: ALLOW_DEV_USER_OVERRIDE
+        value: "false"
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: duolingo-frontend
+          property: host
+
+  # Frontend Next.js 14 App Service
+  - type: web
+    name: duolingo-frontend
+    env: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    plan: free
+    envVars:
+      - key: BACKEND_INTERNAL_URL
+        fromService:
+          type: web
+          name: duolingo-backend
+          property: host
+      - key: NEXT_PUBLIC_API_URL
+        value: ""

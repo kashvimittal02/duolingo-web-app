@@ -1,0 +1,59 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: "class",
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        duo: {
+          green: "#58cc02",
+          "green-dark": "#46a302",
+          "green-light": "#d7ffb8",
+          blue: "#1cb0f6",
+          "blue-dark": "#1899d6",
+          "blue-light": "#ddf4ff",
+          red: "#ff4b4b",
+          "red-dark": "#ea2b2b",
+          "red-light": "#ffdfe0",
+          yellow: "#ffc800",
+          "yellow-dark": "#e5a400",
+          orange: "#ff9600",
+          purple: "#ce82ff",
+          "purple-dark": "#a560cc",
+          gray: "#e5e5e5",
+          "gray-dark": "#afafaf",
+          "gray-border": "#e5e5e5",
+          charcoal: "#3c3c3c",
+          dark: "#131f24",
+          card: "#ffffff",
+        },
+      },
+      fontFamily: {
+        sans: [
+          "Nunito",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "sans-serif",
+        ],
+      },
+      boxShadow: {
+        "duo-sm": "0 2px 0 0 rgba(0, 0, 0, 0.2)",
+        duo: "0 4px 0 0 rgba(0, 0, 0, 0.2)",
+        "duo-lg": "0 6px 0 0 rgba(0, 0, 0, 0.2)",
+        "duo-green": "0 4px 0 0 #46a302",
+        "duo-blue": "0 4px 0 0 #1899d6",
+        "duo-red": "0 4px 0 0 #ea2b2b",
+        "duo-gray": "0 4px 0 0 #afafaf",
+      },
+    },
+  },
+  plugins: [],
+};
