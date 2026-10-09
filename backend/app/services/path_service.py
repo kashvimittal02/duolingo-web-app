@@ -39,46 +39,54 @@ def get_course_tree_for_learner(db: Session, user_id: int, course_code: str = "e
     for c in completions:
         completion_counts[c[0]] = completion_counts.get(c[0], 0) + 1
 
-    # Fetch all skills in ordered sequence across all units
-    ordered_skills = (
-        db.query(Skill)
-        .join(Unit, Skill.unit_id == Unit.id)
-        .filter(Unit.course_id == course.id)
-        .order_by(Unit.order_index, Skill.order_index)
-        .all()
-    )
-
-    # Determine unlocked status for each skill in sequence
-    skill_status_map: Dict[int, str] = {}
-    prior_skill_has_crown = True  # First skill is always unlocked
-
-    for idx, skill in enumerate(ordered_skills):
-        skill_prog = progress_map.get(skill.id)
-        crowns = skill_prog.crowns if skill_prog else 0
-        is_completed = skill_prog.is_completed if skill_prog else False
-
-        if not prior_skill_has_crown:
-            skill_status_map[skill.id] = "locked"
-        else:
-            if is_completed or crowns >= skill.total_crown_levels:
-                skill_status_map[skill.id] = "completed"
-            elif crowns > 0:
-                skill_status_map[skill.id] = "available"
-            else:
-                skill_status_map[skill.id] = "available"
-
-        # Rule: Next skill unlocks if current skill has >= 1 crown or is completed
-        prior_skill_has_crown = (crowns >= 1) or is_completed
-
-    # Construct the DTO hierarchy
+    # Construct the DTO hierarchy enforcing unit prerequisites:
+    # Section 2 / Unit 2 remains locked until all required lessons in Section 1 are completed.
     units_dto = []
+    prior_unit_completed = True  # First unit has no prerequisite
+
     for unit in course.units:
+        # Check if all lessons in this unit are completed
+        unit_lesson_ids = [
+            lesson.id
+            for skill in unit.skills
+            for lesson in skill.lessons
+        ]
+        is_this_unit_completed = (
+            all(lid in completed_lesson_ids for lid in unit_lesson_ids)
+            if unit_lesson_ids else True
+        )
+
+        # Section is unlocked ONLY if all previous units were completed
+        is_unit_unlocked = prior_unit_completed
+
         skills_dto = []
+        prior_skill_unlocked = is_unit_unlocked  # First skill in unit unlocked only if unit itself is unlocked
+
         for skill in unit.skills:
-            skill_status = skill_status_map.get(skill.id, "locked")
             skill_prog = progress_map.get(skill.id)
             crowns = skill_prog.crowns if skill_prog else 0
+            is_skill_completed = skill_prog.is_completed if skill_prog else False
             curr_lesson_idx = skill_prog.current_lesson_index if skill_prog else 0
+
+            # Check if all lessons in this skill are completed
+            skill_lesson_ids = [l.id for l in skill.lessons]
+            all_skill_lessons_done = (
+                all(lid in completed_lesson_ids for lid in skill_lesson_ids)
+                if skill_lesson_ids else False
+            )
+
+            if not is_unit_unlocked or not prior_skill_unlocked:
+                skill_status = "locked"
+            else:
+                if is_skill_completed or all_skill_lessons_done or crowns >= skill.total_crown_levels:
+                    skill_status = "completed"
+                else:
+                    skill_status = "available"
+
+            # Within an unlocked unit, subsequent skill unlocks if previous skill has >= 1 crown or is completed
+            prior_skill_unlocked = is_unit_unlocked and (
+                (crowns >= 1) or is_skill_completed or all_skill_lessons_done
+            )
 
             lessons_dto = []
             prior_lesson_completed = True
@@ -125,12 +133,19 @@ def get_course_tree_for_learner(db: Session, user_id: int, course_code: str = "e
         units_dto.append(UnitNodeDTO(
             id=unit.id,
             course_id=unit.course_id,
+            section_index=getattr(unit, "section_index", 1),
+            section_title=getattr(unit, "section_title", "Rookie Basics"),
             order_index=unit.order_index,
             title=unit.title,
             description=unit.description,
             hex_color=unit.hex_color,
+            is_unlocked=is_unit_unlocked,
+            is_checkpoint=getattr(unit, "is_checkpoint", False),
             skills=skills_dto
         ))
+
+        # Subsequent unit unlocks only if all previous units were completed
+        prior_unit_completed = prior_unit_completed and is_this_unit_completed
 
     return CourseTreeResponse(
         course_id=course.id,

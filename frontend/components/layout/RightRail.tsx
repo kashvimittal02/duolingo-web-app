@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LingoMascot } from "@/components/mascot/LingoMascot";
+import { RewardIcon } from "@/components/rewards/RewardIcon";
 import { getLeaderboard } from "@/lib/api";
 import { LearnerProfile, LeaderboardResponse } from "@/lib/types";
 import {
@@ -43,14 +44,14 @@ export const RightRail: React.FC<RightRailProps> = ({ profile }) => {
   const userRank = userEntry?.rank;
 
   return (
-    <aside className="hidden lg:flex flex-col gap-5 w-80 shrink-0 select-none">
+    <aside className="hidden lg:flex flex-col gap-5 w-80 shrink-0 select-none lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden lg:pr-2 lg:pb-16 custom-scrollbar overscroll-contain">
       {/* 1. Daily XP Goal Progress Card */}
       {stats && (
         <Card className="flex flex-col gap-3 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 bg-amber-100 dark:bg-amber-950/60 rounded-2xl shrink-0">
-                <Zap className="w-6 h-6 fill-amber-500 text-amber-600 dark:text-amber-400" />
+              <div className="p-2 bg-amber-100 dark:bg-amber-950/60 rounded-2xl shrink-0 flex items-center justify-center">
+                <RewardIcon name="star" size={26} animate />
               </div>
               <div>
                 <h3 className="font-black text-sm text-gray-800 dark:text-white">
@@ -92,8 +93,8 @@ export const RightRail: React.FC<RightRailProps> = ({ profile }) => {
       {stats && (
         <Card className="flex flex-col gap-3 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-orange-100 dark:bg-orange-950/60 rounded-2xl shrink-0">
-              <Flame className="w-7 h-7 fill-duo-orange text-duo-orange" />
+            <div className="p-2.5 bg-orange-100 dark:bg-orange-950/60 rounded-2xl shrink-0 flex items-center justify-center">
+              <RewardIcon name="fire" size={28} />
             </div>
             <div>
               <h3 className="font-black text-base text-gray-800 dark:text-white">
@@ -113,7 +114,7 @@ export const RightRail: React.FC<RightRailProps> = ({ profile }) => {
       <Card className="flex flex-col gap-3 p-4">
         <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-[#283b44]">
           <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-duo-yellow-dark" />
+            <RewardIcon name="trophy" size={20} />
             <h3 className="font-black text-sm text-gray-800 dark:text-white">
               {leaderboard ? leaderboard.league_name : "Weekly League"}
             </h3>
@@ -168,17 +169,55 @@ export const RightRail: React.FC<RightRailProps> = ({ profile }) => {
         </Link>
       </Card>
 
-      {/* 4. Mascot Encouragement Banner */}
-      <div className="p-4 rounded-3xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/20 dark:to-teal-950/20 border-2 border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-between gap-2">
-        <div className="flex flex-col gap-1">
+      {/* 4. Daily Quests Preview Card */}
+      <Card className="flex flex-col gap-3 p-4">
+        <div className="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-[#283b44]">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-purple-100 dark:bg-purple-950/60 rounded-xl text-purple-600 dark:text-purple-400">
+              <Target className="w-4 h-4 stroke-[2.5]" />
+            </div>
+            <h3 className="font-black text-sm text-gray-800 dark:text-white">
+              Daily Quests
+            </h3>
+          </div>
+          <Link
+            href="/quests"
+            className="text-xs font-black text-duo-blue hover:underline uppercase tracking-wide"
+          >
+            View All
+          </Link>
+        </div>
+
+        <div className="flex flex-col gap-2 pt-1">
+          <div className="flex items-center justify-between text-xs font-bold text-gray-700 dark:text-gray-200">
+            <span>Earn {dailyGoal} XP today</span>
+            <span className="font-black text-duo-green">{dailyXp}/{dailyGoal} XP</span>
+          </div>
+          <div className="w-full bg-gray-100 dark:bg-[#283b44] h-2.5 rounded-full overflow-hidden border border-gray-200 dark:border-[#37464f]">
+            <div
+              className="bg-duo-green h-full transition-all duration-300 rounded-full"
+              style={{ width: `${dailyPercent}%` }}
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* 5. Mascot Encouragement Banner */}
+      <div className="p-4 rounded-3xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/20 dark:to-teal-950/20 border-2 border-emerald-500/20 dark:border-emerald-500/30 flex flex-col items-center text-center gap-2">
+        <LingoMascot
+          expression={stats?.hearts === 0 ? "sad" : "happy"}
+          size="md"
+          speechBubble={stats?.hearts === 0 ? "Need hearts?" : "¡Tú puedes!"}
+          bubblePosition="top"
+        />
+        <div className="flex flex-col gap-0.5 mt-1">
           <span className="text-xs font-black text-duo-green uppercase tracking-wider">
             Daily Motivation
           </span>
-          <p className="text-xs font-black text-gray-700 dark:text-gray-300">
+          <p className="text-xs font-bold text-gray-700 dark:text-gray-300">
             ¡Sigue practicando! Consistency is key to mastery.
           </p>
         </div>
-        <LingoMascot expression="encouraging" size="sm" />
       </div>
     </aside>
   );

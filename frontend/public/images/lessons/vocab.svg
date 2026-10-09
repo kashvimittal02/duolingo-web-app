@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="vocabGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+  <!-- Background Badge -->
+  <circle cx="50" cy="50" r="44" fill="url(#vocabGrad)" stroke="#0369a1" stroke-width="4" />
+  <!-- Open Book -->
+  <path d="M 24 38 C 34 34 44 36 50 42 C 56 36 66 34 76 38 L 76 68 C 66 64 56 66 50 72 C 44 66 34 64 24 68 Z" fill="#ffffff" stroke="#075985" stroke-width="3" stroke-linejoin="round" />
+  <line x1="50" y1="42" x2="50" y2="72" stroke="#0284c7" stroke-width="3" />
+  <!-- Page Lines -->
+  <line x1="30" y1="46" x2="44" y2="46" stroke="#bae6fd" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="30" y1="54" x2="44" y2="54" stroke="#bae6fd" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="56" y1="46" x2="70" y2="46" stroke="#bae6fd" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="56" y1="54" x2="70" y2="54" stroke="#bae6fd" stroke-width="2.5" stroke-linecap="round" />
+</svg>

@@ -234,33 +234,21 @@ def refill_hearts_with_gems(db: Session, user_id: int, refill_type: str = "full_
         message="Hearts fully restored to 5!"
     )
 
-def practice_earn_heart(db: Session, user_id: int) -> PracticeHeartResponse:
+def practice_earn_heart(db: Session, user_id: int, session_token: Optional[str] = None) -> PracticeHeartResponse:
     """
-    Allows a learner to earn 1 heart through practice.
-    Mutates database and recovers 1 heart with 0 XP to prevent heart-farming.
+    Awards 1 heart only if a valid, completed practice session token is provided.
+    Rejects blind requests without a completed practice session.
     """
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user or not user.stats:
-        raise HTTPException(status_code=404, detail="Learner not found")
+    if not session_token:
+        raise HTTPException(
+            status_code=400,
+            detail="Practice session token required. You must complete a practice session to earn a heart."
+        )
 
-    stats = user.stats
-    sync_hearts_on_mutation(stats)
-
-    if stats.hearts >= stats.max_hearts:
-        raise HTTPException(status_code=400, detail="Hearts are already full!")
-
-    stats.hearts = min(stats.max_hearts, stats.hearts + 1)
-    if stats.hearts >= stats.max_hearts:
-        stats.last_heart_loss_at = None
-
-    # Zero XP awarded to prevent API farming
-    xp_awarded = settings.PRACTICE_HEART_XP  # 0
-    stats.xp += xp_awarded
-    db.commit()
-    db.refresh(stats)
-
+    from app.services.practice_service import complete_practice_session
+    comp = complete_practice_session(db, session_token, user_id)
     return PracticeHeartResponse(
-        hearts=stats.hearts,
-        xp_awarded=xp_awarded,
-        message="Practice completed! Recovered 1 Heart."
+        hearts=comp.hearts,
+        xp_awarded=0,
+        message=comp.message
     )

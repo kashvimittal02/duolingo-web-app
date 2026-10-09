@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LingoMascot } from "@/components/mascot/LingoMascot";
+import { RewardIcon } from "@/components/rewards/RewardIcon";
 import { getLearnerProfile } from "@/lib/api";
 import { LearnerProfile } from "@/lib/types";
 import {
@@ -132,7 +133,7 @@ export default function ProfilePage() {
                   {/* Total XP */}
                   <Card className="flex flex-col gap-2 p-4">
                     <div className="flex items-center gap-2 text-duo-yellow-dark">
-                      <Zap className="w-5 h-5 fill-duo-yellow text-duo-yellow" />
+                      <RewardIcon name="star" size={20} animate />
                       <span className="text-xs font-black uppercase text-gray-500 dark:text-gray-400">
                         Total XP
                       </span>
@@ -145,7 +146,7 @@ export default function ProfilePage() {
                   {/* Daily Streak */}
                   <Card className="flex flex-col gap-2 p-4">
                     <div className="flex items-center gap-2 text-duo-orange">
-                      <Flame className="w-5 h-5 fill-duo-orange text-duo-orange" />
+                      <RewardIcon name="fire" size={20} />
                       <span className="text-xs font-black uppercase text-gray-500 dark:text-gray-400">
                         Day Streak
                       </span>
@@ -158,7 +159,7 @@ export default function ProfilePage() {
                   {/* Crowns */}
                   <Card className="flex flex-col gap-2 p-4">
                     <div className="flex items-center gap-2 text-amber-600">
-                      <Crown className="w-5 h-5 fill-amber-400 text-amber-500" />
+                      <RewardIcon name="trophy" size={20} />
                       <span className="text-xs font-black uppercase text-gray-500 dark:text-gray-400">
                         Crowns
                       </span>
@@ -171,7 +172,7 @@ export default function ProfilePage() {
                   {/* Gems */}
                   <Card className="flex flex-col gap-2 p-4">
                     <div className="flex items-center gap-2 text-duo-blue">
-                      <Gem className="w-5 h-5 fill-duo-blue text-duo-blue" />
+                      <RewardIcon name="gem" size={20} />
                       <span className="text-xs font-black uppercase text-gray-500 dark:text-gray-400">
                         Gems
                       </span>
@@ -184,7 +185,7 @@ export default function ProfilePage() {
                   {/* Hearts */}
                   <Card className="flex flex-col gap-2 p-4">
                     <div className="flex items-center gap-2 text-duo-red">
-                      <Heart className="w-5 h-5 fill-duo-red text-duo-red" />
+                      <RewardIcon name="heart" size={20} />
                       <span className="text-xs font-black uppercase text-gray-500 dark:text-gray-400">
                         Hearts
                       </span>

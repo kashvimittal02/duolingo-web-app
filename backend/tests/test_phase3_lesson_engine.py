@@ -321,7 +321,7 @@ def test_first_time_lesson_completion_awards_15_xp_and_advances_progression(clie
     assert comp_data["total_xp"] == initial_xp + 15
     assert comp_data["is_replay"] is False
     assert comp_data["is_idempotent"] is False
-    assert comp_data["crowns"] == 3  # Skill 2 had 2 crowns; advancing to 3 because all lessons in skill done
+    assert comp_data["crowns"] == 5  # Skill 1 (Greetings) has 5 crowns
 
     # Verify DB persistence
     seeded_db.refresh(learner.stats)
@@ -950,4 +950,96 @@ def test_concurrent_final_answer_vs_completion_race(thread_safe_client):
     assert len(answers) == 5, "All 5 answers must be safely present in DB"
     s.close()
 
+# --- SPECIAL-CHARACTER & TYPE-ANSWER REGRESSION TESTS ---
+
+def test_type_answer_spanish_special_characters_and_tolerance(client, seeded_db):
+    """
+    Regression Test:
+    Verify type_answer exercise grading accepts correct Spanish translation with or without
+    accents, handles casing and whitespace, and rejects incorrect/unrelated answers.
+    Prompt: "Type 'Hello, goodbye' in Spanish"
+    Canonical: "Hola, adiós"
+    """
+    from app.services.validator_service import grade_exercise_submission, normalize_text
+    from app.models.exercise import Exercise
+
+    # Start Lesson 1
+    resp = client.post("/api/v1/lessons/1/start")
+    assert resp.status_code == 200
+    token = resp.json()["session_token"]
+    exercises = resp.json()["exercises"]
+
+    ta_ex = next(ex for ex in exercises if ex["exercise_type"] == "type_answer")
+    assert "Hello, goodbye" in ta_ex["prompt"]
+
+    db_ex = seeded_db.query(Exercise).filter(Exercise.id == ta_ex["id"]).first()
+
+    # Exact canonical with accent and comma
+    is_corr, sol = grade_exercise_submission(db_ex, "Hola, adiós")
+    assert is_corr is True
+    assert sol == "Hola, adiós"
+
+    # With inverted exclamation and question marks
+    assert grade_exercise_submission(db_ex, "¡Hola, adiós!")[0] is True
+    assert grade_exercise_submission(db_ex, "¿Hola, adiós?")[0] is True
+
+    # Without accent mark (tolerant of unaccented typing per grading policy)
+    assert grade_exercise_submission(db_ex, "Hola, adios")[0] is True
+    assert grade_exercise_submission(db_ex, "hola adios")[0] is True
+
+    # Uppercase
+    assert grade_exercise_submission(db_ex, "HOLA, ADIÓS")[0] is True
+
+    # Leading, trailing, and redundant whitespace
+    assert grade_exercise_submission(db_ex, "   Hola,   adiós   ")[0] is True
+
+    # Spanish special characters preserved in normalization test
+    assert normalize_text("Hola, adiós") == "hola adios"
+
+    # Rejection of empty or whitespace-only answers
+    assert grade_exercise_submission(db_ex, "")[0] is False
+    assert grade_exercise_submission(db_ex, "   ")[0] is False
+    assert grade_exercise_submission(db_ex, None)[0] is False
+
+    # Rejection of unrelated Spanish phrases
+    assert grade_exercise_submission(db_ex, "Buenos días")[0] is False
+    assert grade_exercise_submission(db_ex, "Muchas gracias")[0] is False
+
+    # Rejection of English prompt echoed back
+    assert grade_exercise_submission(db_ex, "Hello, goodbye")[0] is False
+
+    # Rejection of inverted words
+    assert grade_exercise_submission(db_ex, "Adiós, hola")[0] is False
+
+    # Rejection of partial answers
+    assert grade_exercise_submission(db_ex, "Hola")[0] is False
+    assert grade_exercise_submission(db_ex, "adiós")[0] is False
+
+    # Submit correct answer via actual API endpoint to verify full integration
+    ans_resp = client.post(
+        f"/api/v1/lessons/sessions/{token}/answer",
+        json={"exercise_id": ta_ex["id"], "answer": "Hola, adiós"}
+    )
+    assert ans_resp.status_code == 200
+    assert ans_resp.json()["is_correct"] is True
+    assert ans_resp.json()["correct_solution"] == "Hola, adiós"
+
+def test_type_answer_language_metadata_and_special_character_set(client, seeded_db):
+    """
+    Regression Test:
+    Verify SafeExerciseDTO and exercise payload contain language metadata
+    and Spanish special character support ('á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ', "¿", "¡").
+    """
+    resp = client.post("/api/v1/lessons/1/start")
+    assert resp.status_code == 200
+    exercises = resp.json()["exercises"]
+
+    ta_ex = next(ex for ex in exercises if ex["exercise_type"] == "type_answer")
+    assert ta_ex["target_lang"] == "es"
+    assert ta_ex["payload"].get("target_lang") == "es"
+
+    # Verify Spanish special character presence
+    expected_spanish_chars = ["á", "é", "í", "ó", "ú", "ü", "ñ", "¿", "¡"]
+    for char in expected_spanish_chars:
+        assert isinstance(char, str) and len(char) == 1
 

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gramGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c084fc" />
+      <stop offset="100%" stop-color="#9333ea" />
+    </linearGradient>
+  </defs>
+  <!-- Background Badge -->
+  <circle cx="50" cy="50" r="44" fill="url(#gramGrad)" stroke="#6b21a8" stroke-width="4" />
+  <!-- Compass / Puzzle / Gear Graphic -->
+  <circle cx="50" cy="50" r="28" fill="#ffffff" stroke="#581c87" stroke-width="3" />
+  <circle cx="50" cy="50" r="24" fill="#fae8ff" />
+  <!-- North-South Star Needle -->
+  <polygon points="50,28 55,48 50,45 45,48" fill="#a855f7" stroke="#7e22ce" stroke-width="1.5" />
+  <polygon points="50,72 55,52 50,55 45,52" fill="#7e22ce" stroke="#6b21a8" stroke-width="1.5" />
+  <!-- East-West -->
+  <polygon points="72,50 52,55 55,50 52,45" fill="#c084fc" />
+  <polygon points="28,50 48,55 45,50 48,45" fill="#d8b4fe" />
+  <circle cx="50" cy="50" r="4" fill="#ffffff" stroke="#581c87" stroke-width="2" />
+</svg>

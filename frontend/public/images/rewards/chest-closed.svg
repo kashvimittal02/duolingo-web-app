@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <radialGradient id="chestGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="chestWood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b45309" />
+      <stop offset="100%" stop-color="#78350f" />
+    </linearGradient>
+    <linearGradient id="chestGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+
+  <!-- Glow and Shadow -->
+  <circle cx="50" cy="50" r="48" fill="url(#chestGlow)" />
+  <ellipse cx="50" cy="85" rx="34" ry="7" fill="#000000" fill-opacity="0.18" />
+
+  <!-- Chest Body (Bottom Box) -->
+  <rect x="18" y="46" width="64" height="34" rx="6" fill="url(#chestWood)" stroke="#451a03" stroke-width="3.5" />
+
+  <!-- Gold Trim on Body -->
+  <rect x="18" y="46" width="64" height="6" fill="url(#chestGold)" />
+  <rect x="26" y="46" width="8" height="34" fill="url(#chestGold)" />
+  <rect x="66" y="46" width="8" height="34" fill="url(#chestGold)" />
+
+  <!-- Chest Lid (Curved Top) -->
+  <path d="M 16 46 C 16 30 30 20 50 20 C 70 20 84 30 84 46 Z" fill="url(#chestWood)" stroke="#451a03" stroke-width="3.5" />
+
+  <!-- Lid Gold Bands -->
+  <path d="M 25 46 C 25 32 34 22 50 22 C 66 22 75 32 75 46" fill="none" stroke="url(#chestGold)" stroke-width="7" />
+  <rect x="14" y="43" width="72" height="6" rx="2" fill="url(#chestGold)" stroke="#b45309" stroke-width="1.5" />
+
+  <!-- Keyhole / Center Latch -->
+  <rect x="44" y="41" width="12" height="14" rx="3" fill="url(#chestGold)" stroke="#78350f" stroke-width="2" />
+  <circle cx="50" cy="46" r="2.5" fill="#451a03" />
+  <polygon points="49,46 51,46 51.5,51 48.5,51" fill="#451a03" />
+
+  <!-- Sparkle highlights -->
+  <circle cx="70" cy="28" r="1.5" fill="#ffffff" />
+  <circle cx="32" cy="52" r="1.5" fill="#ffffff" />
+</svg>

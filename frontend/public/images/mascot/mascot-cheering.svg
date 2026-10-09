@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <radialGradient id="cheerBodyGrad" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#72dc0a" />
+      <stop offset="100%" stop-color="#58cc02" />
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="100" cy="168" rx="46" ry="8" fill="#cbd5e1" opacity="0.8" />
+
+  <!-- Left Ear (Rounded Capsule) -->
+  <g transform="rotate(-18 64 48)">
+    <rect x="54" y="26" width="20" height="34" rx="10" fill="#58cc02" stroke="#3c9a00" stroke-width="4.5" />
+    <rect x="58" y="32" width="12" height="22" rx="6" fill="#ff9fb3" />
+  </g>
+
+  <!-- Right Ear (Rounded Capsule) -->
+  <g transform="rotate(18 136 48)">
+    <rect x="126" y="26" width="20" height="34" rx="10" fill="#58cc02" stroke="#3c9a00" stroke-width="4.5" />
+    <rect x="130" y="32" width="12" height="22" rx="6" fill="#ff9fb3" />
+  </g>
+
+  <!-- Left Raised Cheering Paw -->
+  <circle cx="46" cy="72" r="11" fill="#58cc02" stroke="#3c9a00" stroke-width="3.5" />
+  <!-- Left Sparkle Star -->
+  <path d="M 30 58 Q 33 63 38 64 Q 33 65 30 70 Q 27 65 22 64 Q 27 63 30 58 Z" fill="#f59e0b" />
+
+  <!-- Right Raised Cheering Paw -->
+  <circle cx="154" cy="72" r="11" fill="#58cc02" stroke="#3c9a00" stroke-width="3.5" />
+  <!-- Right Sparkle Star -->
+  <path d="M 170 58 Q 173 63 178 64 Q 173 65 170 70 Q 167 65 162 64 Q 167 63 170 58 Z" fill="#f59e0b" />
+
+  <!-- Main Round Head/Body -->
+  <circle cx="100" cy="106" r="52" fill="url(#cheerBodyGrad)" stroke="#3c9a00" stroke-width="5" />
+
+  <!-- Inner Belly / Chin Patch -->
+  <ellipse cx="100" cy="118" rx="38" ry="32" fill="#f4fae1" stroke="#58cc02" stroke-width="2.5" />
+
+  <!-- Golden Collar -->
+  <path d="M 62 130 C 74 150 126 150 138 130 C 132 144 116 152 100 152 C 84 152 68 144 62 130 Z" fill="#ff9600" stroke="#d97706" stroke-width="3.5" stroke-linejoin="round" />
+
+  <!-- White Pendant Tag -->
+  <circle cx="100" cy="144" r="6.5" fill="#ffffff" stroke="#d97706" stroke-width="2" />
+
+  <!-- Pink Cheek Blushes -->
+  <ellipse cx="69" cy="110" rx="7.5" ry="4.5" fill="#ff9fb3" opacity="0.9" />
+  <ellipse cx="131" cy="110" rx="7.5" ry="4.5" fill="#ff9fb3" opacity="0.9" />
+
+  <!-- Sparkling Cheering Eyes -->
+  <circle cx="82" cy="92" r="8.5" fill="#1e293b" />
+  <circle cx="85" cy="89.5" r="3" fill="#ffffff" />
+
+  <circle cx="118" cy="92" r="8.5" fill="#1e293b" />
+  <circle cx="121" cy="89.5" r="3" fill="#ffffff" />
+
+  <!-- Cute Nose -->
+  <ellipse cx="100" cy="96" rx="3" ry="2" fill="#1e293b" />
+
+  <!-- Big Cheering Open Mouth -->
+  <path d="M 91 102 Q 100 120 109 102 Z" fill="#d82c20" stroke="#1e293b" stroke-width="2.5" stroke-linejoin="round" />
+  <path d="M 94 109 Q 100 115 106 109" fill="#ff8da1" />
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="starGoldFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#facc15" />
+      <stop offset="100%" stop-color="#eab308" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="50" cy="50" r="48" fill="url(#starGlow)" />
+  <ellipse cx="50" cy="86" rx="26" ry="6" fill="#000000" fill-opacity="0.14" />
+
+  <!-- 3D Bottom Shadow -->
+  <polygon points="50,18 61,40 85,42 67,58 72,82 50,70 28,82 33,58 15,42 39,40" fill="#ca8a04" stroke="#a16207" stroke-width="4" stroke-linejoin="round" transform="translate(0, 5)" />
+
+  <!-- Main Golden Star Body -->
+  <polygon points="50,14 61,36 85,38 67,54 72,78 50,66 28,78 33,54 15,38 39,36" fill="url(#starGoldFront)" stroke="#ca8a04" stroke-width="3" stroke-linejoin="round" />
+
+  <!-- Facet Depth Lines -->
+  <polygon points="50,14 50,66 61,36" fill="#fde047" opacity="0.6" />
+  <polygon points="85,38 50,66 67,54" fill="#eab308" opacity="0.4" />
+  <polygon points="72,78 50,66 50,66" fill="#ca8a04" opacity="0.5" />
+  <polygon points="28,78 50,66 33,54" fill="#fef08a" opacity="0.7" />
+  <polygon points="15,38 50,66 39,36" fill="#fef9c3" opacity="0.8" />
+
+  <!-- Sparkle Reflection -->
+  <polygon points="46,24 49,20 54,26 49,28" fill="#ffffff" />
+  <circle cx="34" cy="46" r="2" fill="#ffffff" />
+</svg>

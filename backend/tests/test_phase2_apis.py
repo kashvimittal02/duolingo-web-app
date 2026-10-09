@@ -16,7 +16,7 @@ def test_get_learner_me(client, seeded_db):
 
     assert data["username"] == "duo_learner"
     assert data["display_name"] == "Alex Developer"
-    assert data["total_crowns"] == 7  # 5 in Greetings + 2 in Food & Drinks
+    assert data["total_crowns"] == 5  # 5 in Greetings
 
     stats = data["stats"]
     assert stats["xp"] == 340
@@ -187,6 +187,8 @@ def test_practice_earn_heart_recovers_heart_and_prevents_xp_farming(client, seed
     """
     Verify POST /api/v1/learner/practice-heart:
     - Increments hearts by 1
+    - Rejects blind POST without a completed practice session
+    - Awards 1 heart only upon genuine practice completion
     - Awards 0 XP to eliminate API-level XP farming
     - Prevents XP inflation on repeated calls
     """
@@ -196,29 +198,58 @@ def test_practice_earn_heart_recovers_heart_and_prevents_xp_farming(client, seed
     learner.stats.last_heart_loss_at = datetime.utcnow()
     seeded_db.commit()
 
-    # First call: hearts 3 -> 4
-    response = client.post("/api/v1/learner/practice-heart")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["hearts"] == 4
-    assert data["xp_awarded"] == 0
+    # Blind call without session is rejected!
+    blind_response = client.post("/api/v1/learner/practice-heart")
+    assert blind_response.status_code == 400
+    assert "practice session token required" in blind_response.json()["detail"].lower()
+
+    # 1. Start practice session (hearts 3 -> 4 flow)
+    start_resp = client.post("/api/v1/practice/start")
+    assert start_resp.status_code == 200
+    session_data = start_resp.json()
+    token1 = session_data["session_token"]
+    exercises = session_data["exercises"]
+    assert len(exercises) > 0
+
+    # Answer all exercises
+    for ex in exercises:
+        ans_resp = client.post(
+            f"/api/v1/practice/sessions/{token1}/answer",
+            json={"exercise_id": ex["id"], "answer": "Hola"}
+        )
+        assert ans_resp.status_code == 200
+
+    # Complete practice session 1: hearts 3 -> 4
+    comp_resp = client.post(f"/api/v1/practice/sessions/{token1}/complete")
+    assert comp_resp.status_code == 200
+    assert comp_resp.json()["hearts"] == 4
+    assert comp_resp.json()["heart_awarded"] is True
 
     seeded_db.refresh(learner.stats)
     assert learner.stats.hearts == 4
     assert learner.stats.xp == 340  # XP unchanged!
 
-    # Second call: hearts 4 -> 5
-    response2 = client.post("/api/v1/learner/practice-heart")
-    assert response2.status_code == 200
-    assert response2.json()["hearts"] == 5
+    # 2. Practice session 2: hearts 4 -> 5 flow
+    start_resp2 = client.post("/api/v1/practice/start")
+    assert start_resp2.status_code == 200
+    token2 = start_resp2.json()["session_token"]
+    for ex in start_resp2.json()["exercises"]:
+        client.post(
+            f"/api/v1/practice/sessions/{token2}/answer",
+            json={"exercise_id": ex["id"], "answer": "Hola"}
+        )
+    comp_resp2 = client.post(f"/api/v1/practice/sessions/{token2}/complete")
+    assert comp_resp2.status_code == 200
+    assert comp_resp2.json()["hearts"] == 5
+
     seeded_db.refresh(learner.stats)
     assert learner.stats.hearts == 5
     assert learner.stats.xp == 340
 
-    # Third call: already full -> rejected with 400!
-    response3 = client.post("/api/v1/learner/practice-heart")
-    assert response3.status_code == 400
-    assert "already full" in response3.json()["detail"].lower()
+    # 3. Third attempt: already full -> start rejected with 400!
+    start_resp3 = client.post("/api/v1/practice/start")
+    assert start_resp3.status_code == 400
+    assert "already full" in start_resp3.json()["detail"].lower()
     seeded_db.refresh(learner.stats)
     assert learner.stats.xp == 340  # Zero XP farmed!
 
@@ -228,9 +259,11 @@ def test_course_tree_structure_and_states(client, seeded_db):
     """
     Verify GET /api/v1/courses/active/tree:
     - Computes full tree with locked, available, and completed states.
+    - Unit 1: is_unlocked=True.
+    - Unit 2: is_unlocked=False (prerequisite: Unit 1 incomplete).
     - Skill 1 (Greetings): completed (5 crowns).
     - Skill 2 (Food & Drinks): available (2 crowns).
-    - Skill 3 (Basic Phrases): available (0 crowns).
+    - Skill 3 (Basic Phrases): locked (0 crowns).
     - Skill 4 (Travel): locked (0 crowns).
     """
     response = client.get("/api/v1/courses/active/tree")
@@ -238,39 +271,38 @@ def test_course_tree_structure_and_states(client, seeded_db):
     tree = response.json()
 
     assert tree["code"] == "es-en"
-    assert len(tree["units"]) == 2
+    assert len(tree["units"]) == 8
 
     unit1 = tree["units"][0]
     unit2 = tree["units"][1]
 
-    # Skill 1 (Greetings)
+    assert unit1["is_unlocked"] is True
+    assert unit2["is_unlocked"] is False
+
+    # Skill 1 (Greetings in Unit 1)
     skill1 = unit1["skills"][0]
     assert skill1["title"] == "Greetings"
-    assert skill1["status"] == "completed"
     assert skill1["crowns"] == 5
-    assert all(lesson["status"] == "completed" for lesson in skill1["lessons"])
+    assert skill1["lessons"][0]["status"] == "completed"
+    assert skill1["lessons"][1]["status"] == "completed"
+    assert skill1["lessons"][2]["status"] == "completed"
+    assert skill1["lessons"][3]["status"] == "available"
+    assert skill1["lessons"][4]["status"] == "locked"
 
-    # Skill 2 (Food & Drinks)
-    skill2 = unit1["skills"][1]
+    # Skill in Unit 2 - locked because Unit 1 is not fully completed
+    skill2 = unit2["skills"][0]
     assert skill2["title"] == "Food & Drinks"
-    assert skill2["status"] == "available"
-    assert skill2["crowns"] == 2
-    # Lesson 1 completed, Lesson 2 available
-    assert skill2["lessons"][0]["status"] == "completed"
-    assert skill2["lessons"][1]["status"] == "available"
+    assert skill2["status"] == "locked"
+    assert all(lesson["status"] == "locked" for lesson in skill2["lessons"])
 
-    # Skill 3 (Basic Phrases in Unit 2) - unlocked because prior skills progress
-    skill3 = unit2["skills"][0]
-    assert skill3["title"] == "Basic Phrases"
-    assert skill3["status"] == "available"
-    assert skill3["lessons"][0]["status"] == "available"
-    assert skill3["lessons"][1]["status"] == "locked"
+    # Unit 6 Checkpoint & Unit 7 Section 2 - locked
+    unit6 = tree["units"][5]
+    assert unit6["is_checkpoint"] is True
+    assert unit6["is_unlocked"] is False
 
-    # Skill 4 (Travel in Unit 2) - locked because Skill 3 has 0 crowns
-    skill4 = unit2["skills"][1]
-    assert skill4["title"] == "Travel"
-    assert skill4["status"] == "locked"
-    assert all(lesson["status"] == "locked" for lesson in skill4["lessons"])
+    unit7 = tree["units"][6]
+    assert unit7["section_index"] == 2
+    assert unit7["is_unlocked"] is False
 
 def test_lesson_status_validation(client, seeded_db):
     """
@@ -286,10 +318,10 @@ def test_lesson_status_validation(client, seeded_db):
     assert res_comp.json()["can_start"] is True
     assert res_comp.json()["status"] == "completed"
 
-    # Skill 4 Lesson 1 (Locked)
-    skill4 = seeded_db.query(Skill).filter(Skill.title == "Travel").first()
-    s4_l1 = skill4.lessons[0]
-    res_locked = client.get(f"/api/v1/lessons/{s4_l1.id}/status")
+    # Locked Lesson in Unit 7 (Travel Basics)
+    skill_locked = seeded_db.query(Skill).filter(Skill.title == "Travel Basics").first()
+    s_locked_l1 = skill_locked.lessons[0]
+    res_locked = client.get(f"/api/v1/lessons/{s_locked_l1.id}/status")
     assert res_locked.status_code == 200
     data_locked = res_locked.json()
     assert data_locked["can_start"] is False
@@ -303,11 +335,11 @@ def test_zero_hearts_lesson_rejection(client, seeded_db):
     learner.stats.last_heart_loss_at = datetime.utcnow()  # no time elapsed
     seeded_db.commit()
 
-    # Skill 2 Lesson 2 is available on path
-    skill2 = seeded_db.query(Skill).filter(Skill.title == "Food & Drinks").first()
-    s2_l2 = skill2.lessons[1]
+    # Skill 1 Lesson 4 is available on path
+    s1 = seeded_db.query(Skill).filter(Skill.title == "Greetings").first()
+    s1_l4 = s1.lessons[3]
 
-    response = client.get(f"/api/v1/lessons/{s2_l2.id}/status")
+    response = client.get(f"/api/v1/lessons/{s1_l4.id}/status")
     assert response.status_code == 200
     data = response.json()
     assert data["can_start"] is False
@@ -317,6 +349,200 @@ def test_invalid_lesson_id_404(client, seeded_db):
     """Verify querying status of non-existent lesson returns 404 Not Found."""
     response = client.get("/api/v1/lessons/9999/status")
     assert response.status_code == 404
+
+def test_section_navigation_and_prerequisites(client, seeded_db):
+    """
+    Verify course curriculum section and unit navigation data integrity:
+    - Section 1 (Unit 1): order_index=1, contains active playable lesson.
+    - Section 2 (Unit 2): order_index=2, contains locked lesson prerequisites.
+    - Status validation rejects starting locked lessons in subsequent section.
+    """
+    tree_resp = client.get("/api/v1/courses/active/tree")
+    assert tree_resp.status_code == 200
+    tree = tree_resp.json()
+
+    units = tree["units"]
+    assert len(units) >= 2
+
+    # Section 1 verification
+    section1 = units[0]
+    assert section1["order_index"] == 1
+    assert "Rookie Basics" in section1["section_title"] or "First Words" in section1["title"]
+    s1_lessons = [l for skill in section1["skills"] for l in skill["lessons"]]
+    s1_active = [l for l in s1_lessons if l["status"] == "available"]
+    assert len(s1_active) > 0, "Section 1 must have an available active lesson to continue"
+
+    # Unit 2 verification & prerequisite locking
+    section2 = units[1]
+    assert section2["order_index"] == 2
+    s2_locked = [l for skill in section2["skills"] for l in skill["lessons"] if l["status"] == "locked"]
+    assert len(s2_locked) > 0, "Unit 2 must preserve locked lesson prerequisites"
+
+    # Verify locked lesson cannot be started
+    locked_lesson = s2_locked[0]
+    status_resp = client.get(f"/api/v1/lessons/{locked_lesson['id']}/status")
+    assert status_resp.status_code == 200
+    assert status_resp.json()["can_start"] is False
+
+def test_section_2_locked_before_section_1_complete(client, seeded_db):
+    """
+    Regression Test: Unit 2 and subsequent units must remain locked while Unit 1 is incomplete.
+    - Unit 1 has Lessons 4 and 5 incomplete in seed data.
+    - Unit 2 is_unlocked is False.
+    - Lesson 6 (first lesson in Unit 2: Café Essentials) is locked.
+    - Attempting to start Lesson 6 returns 403 Forbidden.
+    - Attempting to start a challenge on Lesson 6 returns 403 Forbidden.
+    """
+    tree_resp = client.get("/api/v1/courses/active/tree")
+    assert tree_resp.status_code == 200
+    tree = tree_resp.json()
+
+    unit2 = tree["units"][1]
+    assert unit2["order_index"] == 2
+    assert unit2["is_unlocked"] is False
+
+    for skill in unit2["skills"]:
+        assert skill["status"] == "locked"
+        for lesson in skill["lessons"]:
+            assert lesson["status"] == "locked"
+
+    # Status validation for Lesson 6 (first lesson in Unit 2)
+    status_resp = client.get("/api/v1/lessons/6/status")
+    assert status_resp.status_code == 200
+    status_data = status_resp.json()
+    assert status_data["can_start"] is False
+    assert status_data["status"] == "locked"
+    assert "locked" in status_data["rejection_reason"].lower()
+
+    # Starting lesson 6 must be rejected with 403 Forbidden
+    start_resp = client.post("/api/v1/lessons/6/start")
+    assert start_resp.status_code == 403
+    assert "locked" in start_resp.json()["detail"].lower()
+
+    # Starting legendary challenge on lesson 6 must also be rejected with 403 Forbidden
+    chal_resp = client.post("/api/v1/challenges/6/start")
+    assert chal_resp.status_code == 403
+    assert "locked" in chal_resp.json()["detail"].lower()
+
+def test_unit_2_unlocks_after_unit_1_complete(client, seeded_db):
+    """
+    Regression Test: Unit 2 unlocks dynamically once all Unit 1 lessons (4 and 5) are completed.
+    - Completes Lessons 4 and 5.
+    - Verifies Unit 2 is_unlocked transitions to True.
+    - Food & Drinks transitions to 'available'.
+    - Lesson 6 transitions to 'available' with can_start: True.
+    - Learner can successfully start Lesson 6 (200 OK).
+    """
+    learner = seeded_db.query(User).filter(User.username == "duo_learner").first()
+
+    for lid in [4, 5]:
+        session = LessonSession(
+            session_token=f"test-unlock-session-lesson-{lid}",
+            user_id=learner.id,
+            lesson_id=lid,
+            initial_hearts=5,
+            current_hearts=5,
+            status="completed",
+            finished_at=datetime.utcnow(),
+        )
+        seeded_db.add(session)
+        seeded_db.flush()
+
+        comp = UserLessonCompletion(
+            session_id=session.id,
+            user_id=learner.id,
+            lesson_id=lid,
+            xp_earned=15,
+        )
+        seeded_db.add(comp)
+    seeded_db.commit()
+
+    # Fetch updated tree
+    tree_resp = client.get("/api/v1/courses/active/tree")
+    assert tree_resp.status_code == 200
+    tree = tree_resp.json()
+
+    unit2 = tree["units"][1]
+    assert unit2["order_index"] == 2
+    assert unit2["is_unlocked"] is True
+
+    # First skill in Unit 2 should now be available
+    skill2 = unit2["skills"][0]
+    assert skill2["title"] == "Food & Drinks"
+    assert skill2["status"] == "available"
+
+    # First lesson in Skill 2 (Lesson 6) should now be available
+    lesson6 = skill2["lessons"][0]
+    assert lesson6["id"] == 6
+    assert lesson6["status"] == "available"
+
+    # Lesson 6 status check
+    status_resp = client.get("/api/v1/lessons/6/status")
+    assert status_resp.status_code == 200
+    status_data = status_resp.json()
+    assert status_data["can_start"] is True
+    assert status_data["status"] == "available"
+    assert status_data["rejection_reason"] is None
+
+    # Starting Lesson 6 succeeds
+    start_resp = client.post("/api/v1/lessons/6/start")
+    assert start_resp.status_code == 200
+    start_data = start_resp.json()
+    assert "session_token" in start_data
+    assert len(start_data["exercises"]) > 0
+
+def test_section_2_unlocks_after_checkpoint_complete(client, seeded_db):
+    """
+    Regression Test: Section 2 unlocks dynamically ONLY after all Section 1 lessons (1-25)
+    AND the Checkpoint Challenge (Lesson 26) are completed.
+    """
+    learner = seeded_db.query(User).filter(User.username == "duo_learner").first()
+
+    # Complete all lessons from 4 to 26
+    for lid in range(4, 27):
+        session = LessonSession(
+            session_token=f"test-unlock-checkpoint-{lid}",
+            user_id=learner.id,
+            lesson_id=lid,
+            initial_hearts=5,
+            current_hearts=5,
+            status="completed",
+            finished_at=datetime.utcnow(),
+        )
+        seeded_db.add(session)
+        seeded_db.flush()
+
+        comp = UserLessonCompletion(
+            session_id=session.id,
+            user_id=learner.id,
+            lesson_id=lid,
+            xp_earned=15 if lid < 26 else 50,
+        )
+        seeded_db.add(comp)
+    seeded_db.commit()
+
+    # Fetch updated tree
+    tree_resp = client.get("/api/v1/courses/active/tree")
+    assert tree_resp.status_code == 200
+    tree = tree_resp.json()
+
+    # Section 2 is Unit 7
+    unit7 = tree["units"][6]
+    assert unit7["section_index"] == 2
+    assert unit7["is_unlocked"] is True
+
+    # First skill in Section 2 (Travel Basics)
+    skill_travel = unit7["skills"][0]
+    assert skill_travel["status"] == "available"
+
+    # First lesson in Section 2 (Lesson 27)
+    lesson27 = skill_travel["lessons"][0]
+    assert lesson27["id"] == 27
+    assert lesson27["status"] == "available"
+
+    # Can start lesson 27
+    start_resp = client.post("/api/v1/lessons/27/start")
+    assert start_resp.status_code == 200
 
 # --- STREAK TESTS ---
 

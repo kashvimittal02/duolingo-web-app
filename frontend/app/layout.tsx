@@ -1,18 +1,19 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme";
-
-const nunito = Nunito({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  display: "swap",
-  variable: "--font-nunito",
-});
 
 export const metadata: Metadata = {
   title: "Duolingo Clone - Spanish Learning",
   description: "Fullstack Duolingo-inspired web app built with Next.js and FastAPI",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/images/mascot/mascot-happy.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -23,6 +24,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="alternate icon" href="/favicon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -39,7 +48,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${nunito.variable} ${nunito.className} min-h-screen bg-white dark:bg-[#131f24] text-gray-800 dark:text-gray-100 transition-colors duration-150`}>
+      <body className="font-sans min-h-screen bg-white dark:bg-[#131f24] text-gray-800 dark:text-gray-100 transition-colors duration-150">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

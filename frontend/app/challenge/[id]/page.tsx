@@ -36,6 +36,8 @@ import { FeedbackBar } from "@/components/lesson/FeedbackBar";
 import { AudioButton } from "@/components/ui/AudioButton";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { LingoMascot } from "@/components/mascot/LingoMascot";
+import { RewardIcon } from "@/components/rewards/RewardIcon";
 import { sounds } from "@/lib/audio";
 
 export default function ChallengePage() {
@@ -423,9 +425,13 @@ export default function ChallengePage() {
         maxWidth="sm"
       >
         <div className="flex flex-col items-center text-center p-3">
-          <div className="w-20 h-20 rounded-full bg-red-100 dark:bg-red-950/60 flex items-center justify-center mb-4">
-            <Timer className="w-12 h-12 text-duo-red stroke-[2.5]" />
-          </div>
+          <LingoMascot
+            expression="sad"
+            size="md"
+            speechBubble="Out of time!"
+            bubblePosition="top"
+            className="mb-2"
+          />
 
           <h2 className="text-2xl font-black text-gray-800 dark:text-white mb-2">
             Time Expired!
@@ -465,9 +471,13 @@ export default function ChallengePage() {
         maxWidth="md"
       >
         <div className="flex flex-col items-center text-center p-3">
-          <div className="w-24 h-24 rounded-full bg-purple-100 dark:bg-purple-950/70 border-2 border-purple-300 dark:border-purple-600 flex items-center justify-center mb-4 animate-bounce-subtle">
-            <Sparkles className="w-14 h-14 text-duo-purple fill-purple-400" />
-          </div>
+          <LingoMascot
+            expression="cheering"
+            size="lg"
+            speechBubble={`¡Legendario! +${completionData?.xp_awarded} XP`}
+            bubblePosition="top"
+            className="mb-2 animate-bounce-subtle"
+          />
 
           <h2 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-1">
             Legendary Triumph!
@@ -481,7 +491,8 @@ export default function ChallengePage() {
 
           <div className="grid grid-cols-2 gap-3 w-full mb-6">
             <div className="bg-purple-50 dark:bg-[#201830] border-2 border-purple-200 dark:border-purple-800 rounded-2xl p-3 flex flex-col items-center">
-              <span className="text-xs font-black text-purple-700 dark:text-purple-300 uppercase mb-1">
+              <span className="text-xs font-black text-purple-700 dark:text-purple-300 uppercase mb-1 flex items-center gap-1">
+                <RewardIcon name="star" size={16} />
                 Reward
               </span>
               <span className="text-xl font-black text-purple-900 dark:text-purple-200">
@@ -517,11 +528,18 @@ export default function ChallengePage() {
         title="Abandon Challenge?"
         maxWidth="sm"
       >
-        <div className="text-center p-2">
+        <div className="flex flex-col items-center text-center p-2">
+          <LingoMascot
+            expression="sad"
+            size="sm"
+            speechBubble="Don't quit now!"
+            bubblePosition="top"
+            className="mb-2"
+          />
           <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-6">
             Are you sure? The 90-second server clock keeps running in the background.
           </p>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 w-full">
             <Button
               variant="red"
               fullWidth

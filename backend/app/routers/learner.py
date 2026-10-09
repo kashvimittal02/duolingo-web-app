@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -7,6 +8,7 @@ from app.schemas.learner import (
     LearnerProfileResponse,
     RefillHeartsRequest,
     RefillHeartsResponse,
+    PracticeHeartRequest,
     PracticeHeartResponse,
 )
 from app.services.learner_service import (
@@ -42,11 +44,13 @@ def refill_hearts(
 
 @router.post("/practice-heart", response_model=PracticeHeartResponse)
 def practice_heart(
+    payload: Optional[PracticeHeartRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Awards 1 heart and practice XP for completing a free practice session.
-    Mutates the database. Fails if hearts are already full.
+    Awards 1 heart only upon verification of a completed practice session.
+    Fails if no session token is provided, if session is incomplete, or if hearts are full.
     """
-    return practice_earn_heart(db, current_user.id)
+    token = payload.session_token if payload else None
+    return practice_earn_heart(db, current_user.id, session_token=token)

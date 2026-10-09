@@ -6,7 +6,8 @@ import { HeartCrack, Sparkles, Heart } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { LingoMascot } from "@/components/mascot/LingoMascot";
-import { refillHearts, practiceEarnHeart } from "@/lib/api";
+import { RewardIcon } from "@/components/rewards/RewardIcon";
+import { refillHearts } from "@/lib/api";
 
 interface LessonFailedModalProps {
   isOpen: boolean;
@@ -36,17 +37,8 @@ export const LessonFailedModal: React.FC<LessonFailedModalProps> = ({
     }
   };
 
-  const handlePractice = async () => {
-    try {
-      setLoading(true);
-      await practiceEarnHeart();
-      if (onRecovered) onRecovered();
-      router.push("/");
-    } catch (err: any) {
-      setMessage(err.message || "Could not earn heart from practice");
-    } finally {
-      setLoading(false);
-    }
+  const handlePractice = () => {
+    router.push("/practice");
   };
 
   return (
@@ -57,7 +49,13 @@ export const LessonFailedModal: React.FC<LessonFailedModalProps> = ({
       maxWidth="md"
     >
       <div className="flex flex-col items-center text-center p-2">
-        <LingoMascot expression="concerned" size="lg" className="mb-3" />
+        <LingoMascot
+          expression="sad"
+          size="lg"
+          speechBubble="¡No te rindas! Practice to regain hearts"
+          bubblePosition="top"
+          className="mb-2"
+        />
 
         <h2 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-2">
           You ran out of hearts!
@@ -93,7 +91,7 @@ export const LessonFailedModal: React.FC<LessonFailedModalProps> = ({
             onClick={handlePractice}
           >
             <div className="flex items-center justify-center gap-2">
-              <Heart className="w-5 h-5 text-duo-red fill-duo-red" />
+              <RewardIcon name="heart" size={20} />
               <span>Practice to Recover 1 Heart</span>
             </div>
           </Button>

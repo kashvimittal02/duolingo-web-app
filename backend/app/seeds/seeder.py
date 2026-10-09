@@ -64,18 +64,39 @@ def seed_database(db: Session, reset: bool = False):
         db.add(course)
         db.flush()
 
-        for unit_data in COURSE_DATA["units"]:
+    for unit_data in COURSE_DATA["units"]:
+        unit = db.query(Unit).filter(
+            Unit.course_id == course.id,
+            Unit.order_index == unit_data["order_index"]
+        ).first()
+        if not unit:
             unit = Unit(
                 course_id=course.id,
+                section_index=unit_data.get("section_index", 1),
+                section_title=unit_data.get("section_title", "Rookie Basics"),
                 order_index=unit_data["order_index"],
                 title=unit_data["title"],
                 description=unit_data["description"],
-                hex_color=unit_data["hex_color"]
+                hex_color=unit_data["hex_color"],
+                is_checkpoint=unit_data.get("is_checkpoint", False)
             )
             db.add(unit)
             db.flush()
+        else:
+            unit.section_index = unit_data.get("section_index", 1)
+            unit.section_title = unit_data.get("section_title", "Rookie Basics")
+            unit.title = unit_data["title"]
+            unit.description = unit_data["description"]
+            unit.hex_color = unit_data["hex_color"]
+            unit.is_checkpoint = unit_data.get("is_checkpoint", False)
+            db.flush()
 
-            for skill_data in unit_data["skills"]:
+        for skill_data in unit_data["skills"]:
+            skill = db.query(Skill).filter(
+                Skill.unit_id == unit.id,
+                Skill.order_index == skill_data["order_index"]
+            ).first()
+            if not skill:
                 skill = Skill(
                     unit_id=unit.id,
                     order_index=skill_data["order_index"],
@@ -85,8 +106,18 @@ def seed_database(db: Session, reset: bool = False):
                 )
                 db.add(skill)
                 db.flush()
+            else:
+                skill.title = skill_data["title"]
+                skill.icon_name = skill_data["icon_name"]
+                skill.total_crown_levels = skill_data["total_crown_levels"]
+                db.flush()
 
-                for lesson_data in skill_data["lessons"]:
+            for lesson_data in skill_data["lessons"]:
+                lesson = db.query(Lesson).filter(
+                    Lesson.skill_id == skill.id,
+                    Lesson.order_index == lesson_data["order_index"]
+                ).first()
+                if not lesson:
                     lesson = Lesson(
                         skill_id=skill.id,
                         order_index=lesson_data["order_index"],
@@ -95,8 +126,17 @@ def seed_database(db: Session, reset: bool = False):
                     )
                     db.add(lesson)
                     db.flush()
+                else:
+                    lesson.title = lesson_data["title"]
+                    lesson.xp_reward = lesson_data["xp_reward"]
+                    db.flush()
 
-                    for ex_data in lesson_data["exercises"]:
+                for ex_data in lesson_data["exercises"]:
+                    exercise = db.query(Exercise).filter(
+                        Exercise.lesson_id == lesson.id,
+                        Exercise.order_index == ex_data["order_index"]
+                    ).first()
+                    if not exercise:
                         exercise = Exercise(
                             lesson_id=lesson.id,
                             order_index=ex_data["order_index"],
@@ -107,7 +147,13 @@ def seed_database(db: Session, reset: bool = False):
                             payload_json=ex_data["payload_json"]
                         )
                         db.add(exercise)
-        db.commit()
+                    else:
+                        exercise.exercise_type = ex_data["exercise_type"]
+                        exercise.prompt = ex_data["prompt"]
+                        exercise.prompt_translation = ex_data["prompt_translation"]
+                        exercise.canonical_answer = ex_data["canonical_answer"]
+                        exercise.payload_json = ex_data["payload_json"]
+    db.commit()
 
     # 4. Seed Default Learner & Progress
     learner = db.query(User).filter(User.username == DEFAULT_LEARNER_DATA["username"]).first()
@@ -139,59 +185,37 @@ def seed_database(db: Session, reset: bool = False):
 
         # Retrieve skills for initial progress
         all_skills = db.query(Skill).order_by(Skill.id).all()
-        if len(all_skills) >= 4:
-            s1, s2, s3, s4 = all_skills[0], all_skills[1], all_skills[2], all_skills[3]
+        if len(all_skills) >= 1:
+            s1 = all_skills[0]  # Greetings
 
-            # Skill 1 (Greetings): Completed with 5 crowns
+            # Skill 1 (Greetings): Completed 5 crowns, Lessons 1-3 done, Lesson 4 available
             db.add(UserSkillProgress(
                 user_id=learner.id,
                 skill_id=s1.id,
                 crowns=5,
-                current_lesson_index=2,
+                current_lesson_index=3,
                 is_completed=True
             ))
 
-            # Skill 2 (Food & Drinks): In progress with 2 crowns, 1 lesson done
-            db.add(UserSkillProgress(
-                user_id=learner.id,
-                skill_id=s2.id,
-                crowns=2,
-                current_lesson_index=1,
-                is_completed=False
-            ))
-
-            # Skill 3 (Basic Phrases): Unlocked (0 crowns)
-            db.add(UserSkillProgress(
-                user_id=learner.id,
-                skill_id=s3.id,
-                crowns=0,
-                current_lesson_index=0,
-                is_completed=False
-            ))
-
-            # Skill 4 (Travel): Locked (0 crowns)
-            db.add(UserSkillProgress(
-                user_id=learner.id,
-                skill_id=s4.id,
-                crowns=0,
-                current_lesson_index=0,
-                is_completed=False
-            ))
+            # Remaining skills in Units 2..8 are locked (0 crowns)
+            for other_skill in all_skills[1:]:
+                db.add(UserSkillProgress(
+                    user_id=learner.id,
+                    skill_id=other_skill.id,
+                    crowns=0,
+                    current_lesson_index=0,
+                    is_completed=False
+                ))
             db.flush()
 
-            # Record completions for past lessons with associated sessions for strict auditability
-            completed_lessons = []
+            # Record completions for past lessons 1, 2, 3 with associated sessions for strict auditability
             s1_lessons = db.query(Lesson).filter(Lesson.skill_id == s1.id).order_by(Lesson.order_index).all()
-            completed_lessons.extend(s1_lessons)
-            s2_lesson1 = db.query(Lesson).filter(Lesson.skill_id == s2.id, Lesson.order_index == 1).first()
-            if s2_lesson1:
-                completed_lessons.append(s2_lesson1)
+            completed_lessons = s1_lessons[:3]
 
             from app.services.leaderboard_service import get_current_week_start_utc
             week_start = get_current_week_start_utc()
 
             for idx, c_lesson in enumerate(completed_lessons, start=1):
-                # Create historical completed session for each completion within current week
                 finish_time = week_start + timedelta(hours=idx * 2)
                 start_time = finish_time - timedelta(minutes=10)
                 hist_session = LessonSession(

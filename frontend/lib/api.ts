@@ -13,6 +13,8 @@ import {
   ChallengeStatusResponse,
   ChallengeAnswerResponse,
   ChallengeCompletionResponse,
+  PracticeStartResponse,
+  PracticeCompletionResponse,
 } from "./types";
 
 function getApiBase(): string {
@@ -175,6 +177,38 @@ export async function completeChallenge(
 ): Promise<ChallengeCompletionResponse> {
   return fetchJson<ChallengeCompletionResponse>(
     `/challenges/sessions/${challengeToken}/complete`,
+    {
+      method: "POST",
+    }
+  );
+}
+
+// Practice Mode API
+export async function startPracticeSession(lessonId?: number): Promise<PracticeStartResponse> {
+  return fetchJson<PracticeStartResponse>("/practice/start", {
+    method: "POST",
+    body: JSON.stringify(lessonId ? { lesson_id: lessonId } : {}),
+  });
+}
+
+export async function submitPracticeAnswer(
+  sessionToken: string,
+  payload: { exercise_id: number; answer: any }
+): Promise<AnswerFeedbackResponse> {
+  return fetchJson<AnswerFeedbackResponse>(
+    `/practice/sessions/${sessionToken}/answer`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function completePracticeSession(
+  sessionToken: string
+): Promise<PracticeCompletionResponse> {
+  return fetchJson<PracticeCompletionResponse>(
+    `/practice/sessions/${sessionToken}/complete`,
     {
       method: "POST",
     }

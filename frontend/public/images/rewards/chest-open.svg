@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <radialGradient id="openGlow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.6" />
+      <stop offset="60%" stop-color="#facc15" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#facc15" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="chestWoodOpen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b45309" />
+      <stop offset="100%" stop-color="#78350f" />
+    </linearGradient>
+    <linearGradient id="chestGoldOpen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+
+  <!-- Big Magical Burst Rays -->
+  <circle cx="50" cy="45" r="46" fill="url(#openGlow)" />
+  <ellipse cx="50" cy="88" rx="34" ry="7" fill="#000000" fill-opacity="0.18" />
+
+  <!-- Open Lid Angled Upwards Back -->
+  <path d="M 18 36 C 22 14 36 8 50 8 C 64 8 78 14 82 36 Z" fill="url(#chestWoodOpen)" stroke="#451a03" stroke-width="3" />
+  <rect x="16" y="34" width="68" height="5" fill="url(#chestGoldOpen)" rx="2" />
+
+  <!-- Chest Body (Bottom Box) -->
+  <rect x="18" y="52" width="64" height="32" rx="6" fill="url(#chestWoodOpen)" stroke="#451a03" stroke-width="3.5" />
+
+  <!-- Gold Trim on Body -->
+  <rect x="18" y="52" width="64" height="5" fill="url(#chestGoldOpen)" />
+  <rect x="26" y="52" width="8" height="32" fill="url(#chestGoldOpen)" />
+  <rect x="66" y="52" width="8" height="32" fill="url(#chestGoldOpen)" />
+
+  <!-- Inner Chest Light & Gems Overflow -->
+  <path d="M 22 52 Q 50 42 78 52 Q 50 56 22 52 Z" fill="#fde047" opacity="0.9" />
+
+  <!-- Shining Gems Inside -->
+  <!-- Blue Gem -->
+  <polygon points="36,44 44,40 50,47 42,52" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5" />
+  <!-- Red Ruby -->
+  <polygon points="50,42 58,40 64,48 54,52" fill="#f43f5e" stroke="#be123c" stroke-width="1.5" />
+  <!-- Green Emerald -->
+  <polygon points="44,38 52,34 58,40 50,45" fill="#22c55e" stroke="#15803d" stroke-width="1.5" />
+
+  <!-- Sparkle stars bursting out -->
+  <polygon points="28,26 31,30 35,31 31,32 28,36 26,32 21,31 26,30" fill="#fde047" />
+  <polygon points="72,22 74,26 78,27 74,28 72,32 70,28 66,27 70,26" fill="#fde047" />
+  <polygon points="50,18 52,22 56,23 52,24 50,28 48,24 44,23 48,22" fill="#ffffff" />
+</svg>

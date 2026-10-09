@@ -2,15 +2,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.database import engine, Base, SessionLocal
+from app.database import engine, Base, SessionLocal, ensure_schema_compatibility
 from app.seeds.seeder import seed_database
 from app.models.course import Course
-from app.routers import learner, path, leaderboard, session, challenge
+from app.routers import learner, path, leaderboard, session, challenge, practice
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifecycle hook to ensure database initialization and auto-seeding on boot."""
     Base.metadata.create_all(bind=engine)
+    ensure_schema_compatibility(engine)
     db = SessionLocal()
     try:
         # Check if database has curriculum seeded; if not, seed automatically
@@ -55,3 +56,4 @@ app.include_router(path.router, prefix=settings.API_V1_PREFIX)
 app.include_router(leaderboard.router, prefix=settings.API_V1_PREFIX)
 app.include_router(session.router, prefix=settings.API_V1_PREFIX)
 app.include_router(challenge.router, prefix=settings.API_V1_PREFIX)
+app.include_router(practice.router, prefix=settings.API_V1_PREFIX)

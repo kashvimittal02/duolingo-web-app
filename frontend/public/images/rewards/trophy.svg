@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <radialGradient id="trophyGlow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#facc15" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="trophyGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="40%" stop-color="#facc15" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="50" cy="45" r="46" fill="url(#trophyGlow)" />
+  <ellipse cx="50" cy="88" rx="28" ry="6" fill="#000000" fill-opacity="0.14" />
+
+  <!-- Trophy Handles (Left and Right) -->
+  <path d="M 28 32 C 14 32 12 50 26 56 C 28 56 30 54 30 50 C 20 46 22 38 28 38 Z" fill="#d97706" stroke="#b45309" stroke-width="1.5" />
+  <path d="M 72 32 C 86 32 88 50 74 56 C 72 56 70 54 70 50 C 80 46 78 38 72 38 Z" fill="#d97706" stroke="#b45309" stroke-width="1.5" />
+
+  <!-- Trophy Cup Body -->
+  <path d="M 26 22 L 74 22 C 74 42 66 56 50 56 C 34 56 26 42 26 22 Z" fill="url(#trophyGold)" stroke="#b45309" stroke-width="3" />
+
+  <!-- Cup Rim (Top Oval) -->
+  <ellipse cx="50" cy="22" rx="24" ry="5.5" fill="#fde047" stroke="#b45309" stroke-width="3" />
+  <ellipse cx="50" cy="22" rx="20" ry="3.5" fill="#fef9c3" />
+
+  <!-- Stem / Pedestal Connector -->
+  <path d="M 45 56 L 55 56 L 54 68 L 46 68 Z" fill="#d97706" stroke="#b45309" stroke-width="2" />
+
+  <!-- Trophy Base (Round Tier + Square Pedestal) -->
+  <ellipse cx="50" cy="69" rx="14" ry="4" fill="#facc15" stroke="#b45309" stroke-width="2" />
+  <rect x="32" y="72" width="36" height="13" rx="3" fill="#78350f" stroke="#451a03" stroke-width="2.5" />
+  <rect x="34" y="74" width="32" height="4" fill="#a16207" />
+
+  <!-- Star Badge on Cup -->
+  <polygon points="50,32 52,37 57,37 53,40 55,45 50,42 45,45 47,40 43,37 48,37" fill="#ffffff" />
+
+  <!-- Highlight Reflection -->
+  <path d="M 32 26 C 31 36 36 46 44 50" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+</svg>

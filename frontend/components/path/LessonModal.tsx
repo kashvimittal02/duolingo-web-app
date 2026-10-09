@@ -6,6 +6,7 @@ import { CheckCircle2, Lock, Play, Zap, RotateCcw, Timer } from "lucide-react";
 import { SkillNode, LessonNode } from "@/lib/types";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { RewardIcon } from "@/components/rewards/RewardIcon";
 
 interface LessonModalProps {
   skill: SkillNode | null;
@@ -132,7 +133,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                       </h4>
                       <div className="flex items-center gap-2 mt-0.5 text-xs font-bold">
                         <span className="text-duo-yellow-dark flex items-center gap-1">
-                          <Zap className="w-3.5 h-3.5 fill-duo-yellow text-duo-yellow" />
+                          <RewardIcon name="star" size={14} animate />
                           {isCompleted ? "+5 XP (Replay)" : `+${lesson.xp_reward} XP`}
                         </span>
                       </div>

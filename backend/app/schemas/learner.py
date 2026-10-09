@@ -47,6 +47,9 @@ class RefillHeartsResponse(BaseModel):
     gems: int
     message: str
 
+class PracticeHeartRequest(BaseModel):
+    session_token: Optional[str] = Field(None, description="Completed practice session token required to claim a heart")
+
 class PracticeHeartResponse(BaseModel):
     hearts: int
     xp_awarded: int = Field(0, description="XP awarded for practice (0 to prevent heart-farming)")

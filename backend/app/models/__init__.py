@@ -6,6 +6,7 @@ from app.models.session import LessonSession, SessionAnswer
 from app.models.progress import UserLessonCompletion, UserSkillProgress
 from app.models.gamification import Achievement, UserAchievement, LeaderboardUser
 from app.models.challenge import ChallengeSession, ChallengeAnswer
+from app.models.practice import PracticeSession, PracticeAnswer
 
 __all__ = [
     "Base",
@@ -25,4 +26,6 @@ __all__ = [
     "LeaderboardUser",
     "ChallengeSession",
     "ChallengeAnswer",
+    "PracticeSession",
+    "PracticeAnswer",
 ]

@@ -8,6 +8,7 @@ import { LessonCompletionResponse } from "@/lib/types";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { LingoMascot } from "@/components/mascot/LingoMascot";
+import { RewardIcon } from "@/components/rewards/RewardIcon";
 import { sounds } from "@/lib/audio";
 
 interface LessonCompleteModalProps {
@@ -49,7 +50,13 @@ export const LessonCompleteModal: React.FC<LessonCompleteModalProps> = ({
       maxWidth="md"
     >
       <div className="flex flex-col items-center text-center p-2">
-        <LingoMascot expression="cheering" size="lg" className="mb-3 animate-bounce-subtle" />
+        <LingoMascot
+          expression="cheering"
+          size="lg"
+          speechBubble={`¡Increíble! +${completionData.xp_awarded} XP`}
+          bubblePosition="top"
+          className="mb-2 animate-bounce-subtle"
+        />
 
         <h2 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-1">
           Lesson Completed!
@@ -66,7 +73,7 @@ export const LessonCompleteModal: React.FC<LessonCompleteModalProps> = ({
           {/* XP */}
           <div className="bg-amber-50 dark:bg-[#182830] border-2 border-amber-200 dark:border-amber-800/60 rounded-2xl p-3 flex flex-col items-center">
             <span className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase mb-1 flex items-center gap-1">
-              <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
+              <RewardIcon name="star" size={18} />
               XP
             </span>
             <span className="text-xl font-black text-amber-900 dark:text-amber-300">
@@ -77,7 +84,7 @@ export const LessonCompleteModal: React.FC<LessonCompleteModalProps> = ({
           {/* Streak */}
           <div className="bg-orange-50 dark:bg-[#182830] border-2 border-orange-200 dark:border-orange-800/60 rounded-2xl p-3 flex flex-col items-center">
             <span className="text-xs font-black text-orange-700 dark:text-orange-400 uppercase mb-1 flex items-center gap-1">
-              <Flame className="w-3.5 h-3.5 fill-duo-orange text-duo-orange" />
+              <RewardIcon name="fire" size={18} />
               Streak
             </span>
             <span className="text-xl font-black text-orange-950 dark:text-orange-300">
@@ -88,7 +95,7 @@ export const LessonCompleteModal: React.FC<LessonCompleteModalProps> = ({
           {/* Crowns */}
           <div className="bg-emerald-50 dark:bg-[#182830] border-2 border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-3 flex flex-col items-center">
             <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase mb-1 flex items-center gap-1">
-              <Crown className="w-3.5 h-3.5 fill-emerald-500 text-emerald-600" />
+              <RewardIcon name="trophy" size={18} />
               Crowns
             </span>
             <span className="text-xl font-black text-emerald-950 dark:text-emerald-300">

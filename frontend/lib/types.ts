@@ -73,10 +73,14 @@ export interface SkillNode {
 export interface UnitNode {
   id: number;
   course_id: number;
+  section_index?: number;
+  section_title?: string;
   order_index: number;
   title: string;
   description: string | null;
   hex_color: string;
+  is_unlocked?: boolean;
+  is_checkpoint?: boolean;
   skills: SkillNode[];
 }
 
@@ -111,6 +115,7 @@ export interface SafeExercise {
   prompt: string;
   prompt_translation: string | null;
   payload: Record<string, any>;
+  target_lang?: string;
 }
 
 export interface LessonStartResponse {
@@ -213,6 +218,25 @@ export interface ChallengeCompletionResponse {
   total_xp: number;
   time_taken_seconds: number;
   is_first_completion: boolean;
+  is_idempotent: boolean;
+}
+
+export interface PracticeStartResponse {
+  session_token: string;
+  lesson_id: number;
+  lesson_title: string;
+  total_exercises: number;
+  exercises: SafeExercise[];
+  current_hearts: number;
+  max_hearts: number;
+}
+
+export interface PracticeCompletionResponse {
+  status: string;
+  session_token: string;
+  hearts: number;
+  heart_awarded: boolean;
+  message: string;
   is_idempotent: boolean;
 }
 

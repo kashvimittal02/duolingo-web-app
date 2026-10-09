@@ -1,17 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopHeader } from "@/components/layout/TopHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LingoMascot } from "@/components/mascot/LingoMascot";
-import { getLearnerProfile, refillHearts, practiceEarnHeart } from "@/lib/api";
+import { RewardIcon } from "@/components/rewards/RewardIcon";
+import { getLearnerProfile, refillHearts } from "@/lib/api";
 import { LearnerProfile } from "@/lib/types";
 import { Heart, Gem, Sparkles, ShoppingBag } from "lucide-react";
 
 export default function ShopPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<LearnerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -46,18 +49,9 @@ export default function ShopPage() {
     }
   };
 
-  const handlePractice = async () => {
-    try {
-      setActionLoading(true);
-      setStatusMessage(null);
-      const res = await practiceEarnHeart();
-      setStatusMessage(res.message);
-      await fetchProfile();
-    } catch (err: any) {
-      setStatusMessage(err.message || "Failed to practice");
-    } finally {
-      setActionLoading(false);
-    }
+  const handlePractice = () => {
+    if (stats && stats.hearts >= stats.max_hearts) return;
+    router.push("/practice");
   };
 
   const stats = profile?.stats;
@@ -96,7 +90,7 @@ export default function ShopPage() {
             <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-950/40 flex items-center justify-center shrink-0">
-                  <Heart className="w-10 h-10 fill-duo-red text-duo-red" />
+                  <RewardIcon name="heart" size={36} />
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-gray-800 dark:text-white">
@@ -120,7 +114,7 @@ export default function ShopPage() {
                   onClick={handleRefill}
                 >
                   <div className="flex items-center gap-1.5">
-                    <Gem className="w-4 h-4 fill-white" />
+                    <RewardIcon name="gem" size={18} />
                     <span>350 Gems</span>
                   </div>
                 </Button>
@@ -146,10 +140,10 @@ export default function ShopPage() {
               <div className="shrink-0">
                 <Button
                   variant="outline"
-                  disabled={!stats || stats.hearts >= stats.max_hearts || actionLoading}
+                  disabled={!stats || stats.hearts >= stats.max_hearts}
                   onClick={handlePractice}
                 >
-                  <span>Practice Free</span>
+                  <span>{stats && stats.hearts >= stats.max_hearts ? "Hearts Full" : "Practice Free"}</span>
                 </Button>
               </div>
             </Card>

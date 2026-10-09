@@ -58,6 +58,26 @@ def build_safe_exercise_payload(exercise: Exercise) -> Dict[str, Any]:
             "right_items": right_items
         }
 
+    # Ensure target_lang is included in payload metadata
+    if "target_lang" not in scrubbed:
+        target_lang = "es"
+        try:
+            if (
+                exercise.lesson
+                and exercise.lesson.skill
+                and exercise.lesson.skill.unit
+                and exercise.lesson.skill.unit.course
+            ):
+                c = exercise.lesson.skill.unit.course
+                if c.code and "-" in c.code:
+                    target_lang = c.code.split("-")[0].lower()
+                elif c.target_lang:
+                    t = c.target_lang.lower()
+                    target_lang = "es" if "span" in t or t == "es" else t
+        except Exception:
+            pass
+        scrubbed["target_lang"] = target_lang
+
     return scrubbed
 
 def grade_exercise_submission(exercise: Exercise, answer_payload: Any) -> Tuple[bool, str]:
@@ -173,6 +193,8 @@ def grade_exercise_submission(exercise: Exercise, answer_payload: Any) -> Tuple[
     elif ex_type == "type_answer":
         user_text = str(answer_payload) if answer_payload is not None else ""
         norm_user = normalize_text(user_text)
+        if not norm_user:
+            return False, canonical
         
         # Check against primary canonical answer
         if norm_user == normalize_text(canonical):

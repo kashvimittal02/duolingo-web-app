@@ -9,6 +9,7 @@ class SafeExerciseDTO(BaseModel):
     prompt: str
     prompt_translation: Optional[str] = None
     payload: Dict[str, Any] = Field(..., description="Exercise UI data stripped of all answers and grading keys")
+    target_lang: Optional[str] = Field("es", description="Target language code e.g. es, fr, de")
 
 class LessonStartResponse(BaseModel):
     session_token: str

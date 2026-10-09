@@ -25,10 +25,14 @@ class SkillNodeDTO(BaseModel):
 class UnitNodeDTO(BaseModel):
     id: int
     course_id: int
+    section_index: int = Field(1, description="Section index e.g. 1 or 2")
+    section_title: str = Field("Rookie Basics", description="Section title name")
     order_index: int
     title: str
     description: str
     hex_color: str
+    is_unlocked: bool = Field(True, description="Whether unit is unlocked based on prerequisites")
+    is_checkpoint: bool = Field(False, description="Whether unit represents a section checkpoint challenge")
     skills: List[SkillNodeDTO]
 
 class CourseTreeResponse(BaseModel):

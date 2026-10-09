@@ -18,18 +18,20 @@ def test_seeder_curriculum_integrity(seeded_db):
     assert course.target_lang == "Spanish"
 
     units = seeded_db.query(Unit).filter(Unit.course_id == course.id).order_by(Unit.order_index).all()
-    assert len(units) == 2
-    assert units[0].title == "Unit 1: Rookie Basics"
-    assert units[1].title == "Unit 2: Daily Life"
+    assert len(units) == 8
+    assert units[0].title == "Unit 1: First Words"
+    assert units[1].title == "Unit 2: Everyday Words"
+    assert units[5].is_checkpoint is True
+    assert units[6].section_index == 2
 
     skills = seeded_db.query(Skill).all()
-    assert len(skills) == 4
+    assert len(skills) == 8
 
     lessons = seeded_db.query(Lesson).all()
-    assert len(lessons) == 8
+    assert len(lessons) == 36
 
     exercises = seeded_db.query(Exercise).all()
-    assert len(exercises) == 40  # 8 lessons * 5 exercises
+    assert len(exercises) == 180  # 36 lessons * 5 exercises
 
 def test_all_five_exercise_types_present(seeded_db):
     """Verify that every lesson contains all 5 required exercise types."""
@@ -63,7 +65,7 @@ def test_seeder_learner_integrity(seeded_db):
 
     # Verify skill progress
     progress_records = seeded_db.query(UserSkillProgress).filter(UserSkillProgress.user_id == learner.id).all()
-    assert len(progress_records) == 4
+    assert len(progress_records) == 8
 
     # Skill 1 (Greetings) has 5 crowns and is completed
     skill1_progress = [p for p in progress_records if p.crowns == 5]

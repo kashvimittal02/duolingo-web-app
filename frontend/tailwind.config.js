@@ -35,7 +35,6 @@ module.exports = {
       },
       fontFamily: {
         sans: [
-          "var(--font-nunito)",
           "Nunito",
           "system-ui",
           "-apple-system",

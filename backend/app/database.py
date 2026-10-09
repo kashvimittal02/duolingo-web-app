@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from app.config import settings
 
@@ -40,6 +40,23 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+def ensure_schema_compatibility(target_engine):
+    """Ensures newly added columns in Unit model exist in existing SQLite databases."""
+    with target_engine.connect() as conn:
+        try:
+            res = conn.execute(text("PRAGMA table_info(units)")).fetchall()
+            cols = {row[1] for row in res}
+            if cols:
+                if "section_index" not in cols:
+                    conn.execute(text("ALTER TABLE units ADD COLUMN section_index INTEGER DEFAULT 1 NOT NULL"))
+                if "section_title" not in cols:
+                    conn.execute(text("ALTER TABLE units ADD COLUMN section_title VARCHAR(100) DEFAULT 'Rookie Basics' NOT NULL"))
+                if "is_checkpoint" not in cols:
+                    conn.execute(text("ALTER TABLE units ADD COLUMN is_checkpoint BOOLEAN DEFAULT 0 NOT NULL"))
+                conn.commit()
+        except Exception:
+            pass
 
 def get_db():
     """Dependency generator that yields a database session and closes it cleanly."""

@@ -1,16 +1,18 @@
-# Duolingo Web App — Full-Stack SDE Implementation
+# LINGOAPP — Full-Stack Language Learning Web Application
 
-An original, end-to-end full-stack language learning web application inspired by Duolingo. Built with a server-authoritative architecture where all grading, hearts, progression, daily streaks, XP, crowns, and gamification logic are strictly calculated and persisted on the backend.
+An original, end-to-end full-stack gamified language learning web application inspired by Duolingo. Built with a server-authoritative architecture where all grading, hearts, progression, daily streaks, XP, crowns, and gamification logic are strictly calculated and persisted on the backend.
 
 > *UI is inspired by Duolingo's design patterns; all artwork, sounds, copy, and code are original.*
 
 ---
 
-## Live Demo
+## Live Demo & Repository
 
 - **Frontend Application**: [https://duolingo-frontend-5l9g.onrender.com/](https://duolingo-frontend-5l9g.onrender.com/)
 - **Backend API**: [https://duolingo-web-app-n2ju.onrender.com/](https://duolingo-web-app-n2ju.onrender.com/)
+- **Interactive API Docs**: [https://duolingo-web-app-n2ju.onrender.com/docs](https://duolingo-web-app-n2ju.onrender.com/docs)
 - **Health Check**: [https://duolingo-web-app-n2ju.onrender.com/api/v1/health](https://duolingo-web-app-n2ju.onrender.com/api/v1/health)
+- **GitHub Repository**: [https://github.com/kashvimittal02/duolingo-web-app](https://github.com/kashvimittal02/duolingo-web-app)
 
 > [!NOTE]
 > **Render Free-Tier SQLite Persistence Boundary**:
@@ -23,23 +25,30 @@ An original, end-to-end full-stack language learning web application inspired by
 
 ## 1. Project Overview
 
-This application provides an interactive Spanish A1 curriculum featuring:
-- A progressive learning path with locked, available, and completed lessons.
-- An interactive lesson player supporting 5 distinct exercise types.
-- A deterministic gamification engine with hearts, passive heart regeneration, daily streaks (Asia/Kolkata), mock gem economy, and weekly league rankings.
-- Timed "Legendary" Challenge mode with strict 90-second server countdown, no heart loss, and anti-farming XP protection.
-- Duolingo-authentic Dark Mode with zero-flash initial paint and persistent local preference.
-- Client-side Spanish Audio/TTS via Web Speech API and responsive sound effects via Web Audio API.
-- 100% server authority: zero client-side evaluation, zero answers leaked in API payloads, and duplicate-safe, race-condition-resistant SQLite database transactions.
+LINGOAPP provides an interactive Spanish A1 curriculum featuring:
+- **Expanded Course Structure**:
+  - **Section 1 (Rookie Basics)**: 5 progressive units (Unit 1: First Words, Unit 2: Everyday Words, Unit 3: Simple Sentences, Unit 4: Everyday Conversations, Unit 5: Practice & Review) followed by the comprehensive Section 1 Checkpoint Challenge (Castle Node).
+  - **Section 2 (Daily Life)**: Unlocked only after conquering Section 1, featuring Unit 7 (Food & Dining) and Unit 8 (Daily Routines).
+- **Tactile Learning Path**: Direct stepping-stone lesson nodes arranged in an alternating winding curve with visible connectors, clear state indicators, and floating `START` prompts.
+- **Dynamic Unit Mascots**: Decorative character alongside each unit's path with unlock-based styles:
+  - *Locked Units*: Dark, muted grayscale silhouette (`grayscale brightness-[0.65] dark:brightness-[0.38] contrast-[0.85] opacity-40 dark:opacity-45`), completely motionless and non-interactive.
+  - *Unlocked Units*: Vibrant full color with continuous gentle idle bobbing animation.
+  - *Completed Units*: Full color in celebratory cheering pose (`mascot-cheering.svg`).
+- **Brand Identity & Header**: Standalone mascot logo (no background square), mascot browser favicon, and top-right stats controls (Course Selector dropdown, Streak popup, Gems popup, Hearts practice/refill popup, and Theme toggle).
+- **Independent Desktop Scrolling**: The central learning path and right sidebar rail scroll independently within the viewport.
+- **Interactive Lesson Player**: Supporting 5 distinct exercise types with sound effects and virtual Spanish accent bar.
+- **Deterministic Gamification Engine**: Hearts, passive heart regeneration (1 heart / 30m), practice-to-earn-a-heart flow (+1 heart, 0 XP), daily streaks (Asia/Kolkata), gems economy, and weekly league rankings.
+- **Timed Legendary Challenge Mode**: 90-second server countdown with anti-farming XP protection.
+- **100% Server Authority**: Zero client-side grading, zero answers leaked in payloads, and duplicate-safe SQLite transactions.
 
 ---
 
 ## 2. Tech Stack
 
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Lucide Icons, Canvas-Confetti, Google Fonts (Nunito)
+- **Frontend**: Next.js 14 (App Router), React, TypeScript, Tailwind CSS, Lucide Icons, Canvas-Confetti, Google Fonts (Nunito)
 - **Backend**: Python 3.10+, FastAPI, SQLAlchemy 2.0, Pydantic v2, Uvicorn
 - **Database**: SQLite with Write-Ahead Logging (WAL mode) and enforced Foreign Keys
-- **Testing**: Pytest (58 automated unit, API contract, concurrency, and Legendary challenge tests)
+- **Testing**: Pytest (**70 passing automated tests** across database, API contracts, lesson engine, legendary challenge, and practice flow)
 
 ---
 
@@ -206,29 +215,29 @@ erDiagram
 duolingo-app/
 ├── backend/
 │   ├── app/
-│   │   ├── models/            # SQLAlchemy models (user, course, exercise, session, challenge)
-│   │   ├── routers/           # FastAPI endpoints (learner, path, session, leaderboard, challenge)
-│   │   ├── schemas/           # Pydantic v2 validation DTOs (session, challenge, learner)
-│   │   ├── seeds/             # Curriculum seeder (Spanish A1, default learner, rankings)
-│   │   ├── services/          # Authoritative business logic (grading, sessions, streak, challenge)
+│   │   ├── models/            # SQLAlchemy models (course, exercise, learner, session, challenge, practice)
+│   │   ├── routers/           # FastAPI endpoints (learner, path, session, leaderboard, challenge, practice)
+│   │   ├── schemas/           # Pydantic v2 validation DTOs (session, challenge, learner, tree, practice)
+│   │   ├── seeds/             # Curriculum seeder (expanded Spanish A1, default learner, rankings)
+│   │   ├── services/          # Authoritative business logic (grading, sessions, streak, challenge, practice)
 │   │   ├── config.py          # Application settings & environment variables
 │   │   ├── database.py        # SQLite engine with WAL pragma & session factory
 │   │   └── main.py            # FastAPI app lifecycle & CORS configuration
-│   ├── tests/                 # 58 automated unit, concurrency, and challenge tests
+│   ├── tests/                 # 70 automated unit, API, concurrency, challenge, and practice tests
 │   ├── .python-version        # Pinned Python version (3.13.5) for Render deployment
 │   └── requirements.txt       # Python dependencies
 ├── frontend/
-│   ├── app/                   # Next.js App Router pages (/, /lesson/[id], /challenge/[id], /leaderboard, /quests, /shop, /profile, /settings, /more)
+│   ├── app/                   # Next.js App Router (/, /lesson/[id], /challenge/[id], /practice, /sections, /leaderboard, /quests, /shop, /profile, /settings, /more)
 │   ├── components/
-│   │   ├── layout/            # TopHeader, Sidebar, BottomNav
+│   │   ├── layout/            # TopHeader, Sidebar, BottomNav, RightRail
 │   │   ├── lesson/            # LessonHeader, FeedbackBar, Complete/Failed modals
-│   │   │   └── exercises/     # Renderers for all 5 exercise types
-│   │   ├── mascot/            # Original SVG mascot ("Pepito") with 6 emotional states
-│   │   ├── path/              # UnitHeader, SkillNode, LessonModal, PathConnector
+│   │   │   └── exercises/     # Renderers for all 5 exercise types with Spanish accent bar
+│   │   ├── mascot/            # Mascot components (LingoMascot.tsx, Mascot.tsx)
+│   │   ├── path/              # UnitHeader, LessonPathNode, UnitMascot, CheckpointNode, PathConnector, Modals
 │   │   ├── theme/             # ThemeProvider & Dark Mode toggle
 │   │   └── ui/                # Tactile 3D Buttons, Cards, Modals, ProgressBars, AudioButton
 │   ├── lib/                   # API client (lib/api.ts), types (lib/types.ts), audio (lib/audio.ts)
-│   ├── public/                # Static brand assets and SVGs
+│   ├── public/                # Static brand assets, mascot SVGs (/images/mascot/), rewards
 │   ├── next.config.js         # Configurable reverse proxy rewrite rules
 │   ├── package.json           # Frontend dependencies
 │   └── tailwind.config.js     # Duolingo color palette and design tokens
@@ -364,33 +373,47 @@ The database seeder automatically configures:
 - **Default Learner**:
   - Username: `duo_learner` (Alex Developer)
   - Initial State: 5 hearts, 500 gems, 5-day streak, 300+ lifetime XP
-  - Progress: Skill 1 ("Greetings") completed (5 crowns); Skill 2 ("Food & Drinks") partially completed with Lesson 2 ("Daily Meals") available to play.
-- **Curriculum**:
+  - Progress: Unit 1 ("First Words") completed with Lesson 1 available for review; Unit 2 unlocked and ready to play.
+- **Curriculum Architecture**:
   - Course: Spanish A1 (`es-en`)
-  - 2 Units: "Unit 1: Rookie Basics", "Unit 2: Daily Life"
-  - 4 Skills: Greetings, Food & Drinks, Basic Phrases, Travel
-  - 8 Lessons with 40 exercises covering all 5 exercise formats.
+  - **Section 1 (Rookie Basics)**:
+    - Unit 1: First Words (5 lessons, 25 exercises)
+    - Unit 2: Everyday Words (5 lessons, 25 exercises)
+    - Unit 3: Simple Sentences (5 lessons, 25 exercises)
+    - Unit 4: Everyday Conversations (5 lessons, 25 exercises)
+    - Unit 5: Practice & Review (5 lessons, 25 exercises)
+    - Section 1 Checkpoint Challenge (Comprehensive multi-format challenge node)
+  - **Section 2 (Daily Life)**:
+    - Unit 7: Food & Dining (5 lessons, 25 exercises)
+    - Unit 8: Daily Routines (5 lessons, 25 exercises)
+  - Total: 7 units + Checkpoint Challenge, 36 lessons, and 180+ server-graded exercises across all 5 exercise formats.
 - **Leaderboard**: 9 seeded competitive learners with realistic weekly XP distribution.
 - **Achievements**: 4 achievements ("First Steps", "Wildfire", "Centurion", "Flawless Victory").
 
 ---
 
-## 11. Automated Tests
+## 11. Automated Tests & Verification
 
-The backend test suite contains **58 comprehensive automated tests**:
+### A. Backend Test Suite (**70 Passing Tests**)
+
+The backend test suite contains **70 comprehensive automated tests** run with Pytest:
 
 ```bash
+# From repository root (Windows)
+backend\venv\Scripts\python -m pytest backend/tests -v
+
+# From backend directory (macOS / Linux)
 cd backend
-venv\Scripts\python -m pytest -v
+python -m pytest tests -v
 ```
 
-### Test Coverage Highlights:
+#### Test Coverage Highlights:
 - `test_phase1_database.py` (8 tests): Relational schema integrity, foreign key cascades, unique constraints, seeder idempotency.
-- `test_phase2_apis.py` (21 tests): Passive heart regeneration without database mutation, gem deduction, free practice, course tree status transitions, weekly leaderboard XP aggregation, Asia/Kolkata active and stale streak evaluation.
-- `test_phase3_lesson_engine.py` (23 tests):
-  - Lock enforcement: 403 on locked lessons or 0 hearts.
+- `test_phase2_apis.py` (21 tests): Passive heart regeneration without database mutation, gem deduction, free practice, course tree status transitions, weekly leaderboard XP aggregation, Asia/Kolkata active and stale streak evaluation, Section 2 prerequisite gating.
+- `test_phase3_lesson_engine.py` (29 tests):
+  - Lock enforcement: HTTP 403 on locked lessons or 0 hearts.
   - Payload sanitization: verified absence of `canonical_answer`, `accepted_answers`, `answer_key`.
-  - Server grading for all 5 exercise types.
+  - Server grading for all 5 exercise types with Spanish special characters (`á`, `é`, `í`, `ó`, `ú`, `ñ`, `¿`, `¡`).
   - Multi-threaded concurrency tests under SQLite WAL mode: concurrent duplicate wrong answers (single heart loss), concurrent duplicate correct answers, concurrent completion race conditions.
 - `test_phase4_legendary_mode.py` (6 tests):
   - 90-second server countdown deadline enforcement.
@@ -398,6 +421,25 @@ venv\Scripts\python -m pytest -v
   - First-time Legendary bonus (+20 XP) and anti-farming replay protection (0 XP).
   - Daily and weekly leaderboard XP aggregation from challenge completions.
   - Idempotent completion and session isolation from normal lessons.
+- `test_phase5_practice_flow.py` (6 tests):
+  - Free practice session initialization with sanitized exercises.
+  - Gated access: rejected when hearts are already at full capacity (5/5).
+  - Practice completion awards +1 heart and strictly 0 XP to prevent farming.
+  - Abandoned session handling and completion idempotency.
+
+### B. Frontend Verification (TypeScript & Production Build)
+
+Verify strict type-checking and Next.js static route compilation:
+
+```bash
+cd frontend
+
+# TypeScript check (0 errors)
+npx tsc --noEmit
+
+# Next.js Production Build (13/13 static pages generated)
+npm run build
+```
 
 ---
 

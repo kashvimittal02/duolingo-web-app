@@ -23,6 +23,7 @@ import {
   ChevronRight,
   ExternalLink,
   Code2,
+  Layers,
 } from "lucide-react";
 
 interface MenuItem {
@@ -71,6 +72,13 @@ export default function MorePage() {
     {
       title: "Curriculum & Learning Tools",
       items: [
+        {
+          label: "Course Sections Overview",
+          desc: "Browse all course sections, curriculum milestones, and unit goals.",
+          href: "/sections",
+          icon: Layers,
+          color: "text-duo-green bg-emerald-100 dark:bg-emerald-950/60",
+        },
         {
           label: "Grammar & Vocab Guidebook",
           desc: "Grammar tips and vocabulary reference for Spanish A1 beginners.",

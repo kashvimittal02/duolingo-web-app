@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -17,10 +17,13 @@ class Unit(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
+    section_index = Column(Integer, default=1, nullable=False)
+    section_title = Column(String(100), default="Rookie Basics", nullable=False)
     order_index = Column(Integer, nullable=False)
     title = Column(String(100), nullable=False)
     description = Column(Text, nullable=False)
     hex_color = Column(String(7), default="#58cc02", nullable=False)
+    is_checkpoint = Column(Boolean, default=False, nullable=False)
 
     __table_args__ = (
         UniqueConstraint("course_id", "order_index", name="uq_unit_course_order"),

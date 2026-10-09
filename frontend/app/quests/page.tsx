@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LingoMascot } from "@/components/mascot/LingoMascot";
+import { RewardIcon } from "@/components/rewards/RewardIcon";
 import { getLearnerProfile } from "@/lib/api";
 import { LearnerProfile } from "@/lib/types";
 import {
@@ -97,8 +98,8 @@ export default function QuestsPage() {
               {/* Quest 1: Daily XP Goal */}
               <Card className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 hover:border-amber-300 dark:hover:border-amber-700 transition-all">
                 <div className="flex items-start gap-4 flex-1">
-                  <div className="p-3.5 bg-amber-100 dark:bg-amber-950/60 rounded-2xl shrink-0">
-                    <Zap className="w-7 h-7 fill-amber-500 text-amber-600 dark:text-amber-400" />
+                  <div className="p-3.5 bg-amber-100 dark:bg-amber-950/60 rounded-2xl shrink-0 flex items-center justify-center">
+                    <RewardIcon name="star" size={28} animate />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -131,7 +132,7 @@ export default function QuestsPage() {
                     {dailyXp} / {dailyGoal} XP
                   </span>
                   <div className="flex items-center gap-1 text-xs font-black text-gray-500 dark:text-gray-400 mt-1">
-                    <Gem className="w-3.5 h-3.5 text-duo-blue fill-duo-blue" />
+                    <RewardIcon name="gem" size={16} />
                     <span>+20 Gems</span>
                   </div>
                 </div>
@@ -140,8 +141,8 @@ export default function QuestsPage() {
               {/* Quest 2: Streak Keeper Challenge */}
               <Card className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 hover:border-orange-300 dark:hover:border-orange-700 transition-all">
                 <div className="flex items-start gap-4 flex-1">
-                  <div className="p-3.5 bg-orange-100 dark:bg-orange-950/60 rounded-2xl shrink-0">
-                    <Flame className="w-7 h-7 fill-duo-orange text-duo-orange" />
+                  <div className="p-3.5 bg-orange-100 dark:bg-orange-950/60 rounded-2xl shrink-0 flex items-center justify-center">
+                    <RewardIcon name="fire" size={28} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -183,8 +184,8 @@ export default function QuestsPage() {
               {/* Quest 3: Lesson Mastery */}
               <Card className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
                 <div className="flex items-start gap-4 flex-1">
-                  <div className="p-3.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-2xl shrink-0">
-                    <Trophy className="w-7 h-7 fill-emerald-500 text-emerald-600 dark:text-emerald-400" />
+                  <div className="p-3.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-2xl shrink-0 flex items-center justify-center">
+                    <RewardIcon name="trophy" size={28} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -218,7 +219,7 @@ export default function QuestsPage() {
                     {profile?.total_crowns || 0} / 10 Crowns
                   </span>
                   <div className="flex items-center gap-1 text-xs font-black text-gray-500 dark:text-gray-400 mt-1">
-                    <Trophy className="w-3.5 h-3.5 text-duo-green" />
+                    <RewardIcon name="trophy" size={16} />
                     <span>Mastery Badge</span>
                   </div>
                 </div>

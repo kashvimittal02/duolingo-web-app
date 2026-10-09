@@ -21,6 +21,7 @@ import { TypeAnswer } from "@/components/lesson/exercises/TypeAnswer";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { AudioButton } from "@/components/ui/AudioButton";
+import { LingoMascot } from "@/components/mascot/LingoMascot";
 import { AlertCircle, HelpCircle } from "lucide-react";
 
 function extractSpanishPromptText(prompt: string): string | null {
@@ -297,11 +298,18 @@ export default function LessonSessionPage() {
         title="Quit Lesson?"
         maxWidth="sm"
       >
-        <div className="text-center p-2">
+        <div className="flex flex-col items-center text-center p-2">
+          <LingoMascot
+            expression="sad"
+            size="sm"
+            speechBubble="Don't quit now!"
+            bubblePosition="top"
+            className="mb-2"
+          />
           <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-6">
             Are you sure you want to quit? Your progress in this lesson will be lost.
           </p>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 w-full">
             <Button
               variant="red"
               fullWidth
