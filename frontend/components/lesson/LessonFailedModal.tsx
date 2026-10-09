@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { HeartCrack, Sparkles, Heart } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { LingoMascot } from "@/components/mascot/LingoMascot";
 import { refillHearts, practiceEarnHeart } from "@/lib/api";
 
 interface LessonFailedModalProps {
@@ -56,9 +57,7 @@ export const LessonFailedModal: React.FC<LessonFailedModalProps> = ({
       maxWidth="md"
     >
       <div className="flex flex-col items-center text-center p-2">
-        <div className="w-24 h-24 rounded-full bg-red-100 dark:bg-red-950/40 flex items-center justify-center mb-4">
-          <HeartCrack className="w-14 h-14 text-duo-red stroke-[2.5]" />
-        </div>
+        <LingoMascot expression="sad" size="lg" className="mb-3" />
 
         <h2 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-2">
           You ran out of hearts!

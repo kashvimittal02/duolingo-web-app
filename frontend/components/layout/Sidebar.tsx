@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Trophy, ShoppingBag, User, Sparkles } from "lucide-react";
+import { Compass, Trophy, Target, ShoppingBag, User, MoreHorizontal, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export const Sidebar: React.FC = () => {
@@ -12,8 +12,10 @@ export const Sidebar: React.FC = () => {
   const navItems = [
     { label: "Learn", href: "/", icon: Compass },
     { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
+    { label: "Quests", href: "/quests", icon: Target },
     { label: "Shop", href: "/shop", icon: ShoppingBag },
     { label: "Profile", href: "/profile", icon: User },
+    { label: "More", href: "/more", icon: MoreHorizontal },
   ];
 
   return (

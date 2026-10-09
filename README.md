@@ -2,6 +2,8 @@
 
 An original, end-to-end full-stack language learning web application inspired by Duolingo. Built with a server-authoritative architecture where all grading, hearts, progression, daily streaks, XP, crowns, and gamification logic are strictly calculated and persisted on the backend.
 
+> *UI is inspired by Duolingo's design patterns; all artwork, sounds, copy, and code are original.*
+
 ---
 
 ## Live Demo

@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { TopHeader } from "@/components/layout/TopHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card } from "@/components/ui/Card";
+import { LingoMascot } from "@/components/mascot/LingoMascot";
 import { getLeaderboard, getLearnerProfile } from "@/lib/api";
 import { LeaderboardResponse, LearnerProfile } from "@/lib/types";
 import { Trophy, Medal, Sparkles, AlertCircle } from "lucide-react";
@@ -74,9 +75,12 @@ export default function LeaderboardPage() {
 
         <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8">
           <div className="flex flex-col items-center text-center mb-8">
-            <div className="w-20 h-20 rounded-3xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center mb-4 shadow-sm">
-              <Trophy className="w-12 h-12 fill-amber-500 text-amber-600 dark:text-amber-400" />
-            </div>
+            <LingoMascot
+              expression="cheering"
+              size="md"
+              speechBubble="Compete for the top spot!"
+              className="mb-4"
+            />
             <h1 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-1">
               Weekly Leaderboard
             </h1>

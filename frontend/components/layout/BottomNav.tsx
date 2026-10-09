@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Trophy, ShoppingBag, User } from "lucide-react";
+import { Compass, Trophy, Target, ShoppingBag, User, MoreHorizontal } from "lucide-react";
 
 export const BottomNav: React.FC = () => {
   const pathname = usePathname();
@@ -11,8 +11,10 @@ export const BottomNav: React.FC = () => {
   const navItems = [
     { label: "Learn", href: "/", icon: Compass },
     { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
+    { label: "Quests", href: "/quests", icon: Target },
     { label: "Shop", href: "/shop", icon: ShoppingBag },
     { label: "Profile", href: "/profile", icon: User },
+    { label: "More", href: "/more", icon: MoreHorizontal },
   ];
 
   return (

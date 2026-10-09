@@ -7,6 +7,7 @@ import { Zap, Flame, Crown, Award, CheckCircle } from "lucide-react";
 import { LessonCompletionResponse } from "@/lib/types";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { LingoMascot } from "@/components/mascot/LingoMascot";
 import { sounds } from "@/lib/audio";
 
 interface LessonCompleteModalProps {
@@ -48,9 +49,7 @@ export const LessonCompleteModal: React.FC<LessonCompleteModalProps> = ({
       maxWidth="md"
     >
       <div className="flex flex-col items-center text-center p-2">
-        <div className="w-24 h-24 rounded-full bg-yellow-100 dark:bg-yellow-950/60 flex items-center justify-center mb-4 animate-bounce-subtle">
-          <Zap className="w-14 h-14 fill-duo-yellow text-duo-yellow-dark" />
-        </div>
+        <LingoMascot expression="cheering" size="lg" className="mb-3 animate-bounce-subtle" />
 
         <h2 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-1">
           Lesson Completed!

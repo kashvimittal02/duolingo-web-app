@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AudioButton } from "@/components/ui/AudioButton";
+import { LingoMascot } from "@/components/mascot/LingoMascot";
 import { sounds } from "@/lib/audio";
 
 interface FeedbackBarProps {
@@ -61,35 +62,43 @@ export const FeedbackBar: React.FC<FeedbackBarProps> = ({
       `}
     >
       <div className="max-w-2xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Status Message */}
-        <div className="flex items-start gap-3">
-          {isCorrect ? (
-            <div className="p-1 bg-white dark:bg-[#131f24] rounded-full text-duo-green">
-              <CheckCircle2 className="w-8 h-8 fill-duo-green text-white" />
-            </div>
-          ) : (
-            <div className="p-1 bg-white dark:bg-[#131f24] rounded-full text-duo-red">
-              <XCircle className="w-8 h-8 fill-duo-red text-white" />
-            </div>
-          )}
+        {/* Status Message & Mascot */}
+        <div className="flex items-center gap-3">
+          <LingoMascot
+            expression={isCorrect ? "cheering" : "sad"}
+            size="sm"
+            className="hidden sm:inline-flex shrink-0"
+          />
 
-          <div>
-            <h3 className="text-xl font-black mb-0.5">
-              {isCorrect ? "Nicely done!" : "Incorrect"}
-            </h3>
-            {!isCorrect && solution && (
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-sm font-bold text-red-900/80 dark:text-red-200/90">
-                  Correct solution:{" "}
-                  <span className="font-extrabold text-red-950 dark:text-white">{solution}</span>
-                </p>
-                <AudioButton
-                  text={solution}
-                  size="sm"
-                  label="Listen to correct solution"
-                />
+          <div className="flex items-start gap-3">
+            {isCorrect ? (
+              <div className="p-1 bg-white dark:bg-[#131f24] rounded-full text-duo-green shrink-0">
+                <CheckCircle2 className="w-8 h-8 fill-duo-green text-white" />
+              </div>
+            ) : (
+              <div className="p-1 bg-white dark:bg-[#131f24] rounded-full text-duo-red shrink-0">
+                <XCircle className="w-8 h-8 fill-duo-red text-white" />
               </div>
             )}
+
+            <div>
+              <h3 className="text-xl font-black mb-0.5">
+                {isCorrect ? "Nicely done!" : "Incorrect"}
+              </h3>
+              {!isCorrect && solution && (
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-sm font-bold text-red-900/80 dark:text-red-200/90">
+                    Correct solution:{" "}
+                    <span className="font-extrabold text-red-950 dark:text-white">{solution}</span>
+                  </p>
+                  <AudioButton
+                    text={solution}
+                    size="sm"
+                    label="Listen to correct solution"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

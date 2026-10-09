@@ -6,6 +6,7 @@ import { TopHeader } from "@/components/layout/TopHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { LingoMascot } from "@/components/mascot/LingoMascot";
 import { getLearnerProfile } from "@/lib/api";
 import { LearnerProfile } from "@/lib/types";
 import {
@@ -92,6 +93,10 @@ export default function ProfilePage() {
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <span>Joined {formatDate(profile.created_at)}</span>
                   </div>
+                </div>
+
+                <div className="hidden sm:flex shrink-0">
+                  <LingoMascot expression="happy" size="md" />
                 </div>
               </div>
 

@@ -6,6 +6,7 @@ import { TopHeader } from "@/components/layout/TopHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { LingoMascot } from "@/components/mascot/LingoMascot";
 import { getLearnerProfile, refillHearts, practiceEarnHeart } from "@/lib/api";
 import { LearnerProfile } from "@/lib/types";
 import { Heart, Gem, Sparkles, ShoppingBag } from "lucide-react";
@@ -70,9 +71,12 @@ export default function ShopPage() {
 
         <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8">
           <div className="flex flex-col items-center text-center mb-8">
-            <div className="w-20 h-20 rounded-3xl bg-blue-100 dark:bg-blue-950/60 flex items-center justify-center mb-4 shadow-sm">
-              <ShoppingBag className="w-12 h-12 text-duo-blue" />
-            </div>
+            <LingoMascot
+              expression="happy"
+              size="md"
+              speechBubble="Stock up on hearts & power-ups!"
+              className="mb-4"
+            />
             <h1 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-1">
               Shop & Inventory
             </h1>
