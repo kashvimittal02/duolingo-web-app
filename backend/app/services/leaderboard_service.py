@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from app.models.gamification import LeaderboardUser
 from app.models.user import User
 from app.models.progress import UserLessonCompletion
+from app.models.challenge import ChallengeSession
 from app.schemas.leaderboard import LeaderboardResponse, LeaderboardEntry
 from app.services.learner_service import get_app_timezone
 
@@ -24,21 +25,31 @@ def get_current_week_start_utc() -> datetime:
 def get_weekly_leaderboard(db: Session, current_user_id: int) -> LeaderboardResponse:
     """
     Combines seeded competitors with the current learner's live weekly XP
-    (derived from UserLessonCompletion records completed in the current calendar week),
+    (derived from UserLessonCompletion and ChallengeSession records completed in the current calendar week),
     sorts descending, and assigns 1-based ranking.
     """
     current_user = db.query(User).filter(User.id == current_user_id).first()
     if not current_user or not current_user.stats:
         raise HTTPException(status_code=404, detail="Current learner not found")
 
-    # Calculate current learner's weekly XP strictly from lesson completions in current week
+    # Calculate current learner's weekly XP strictly from lesson and challenge completions in current week
     week_start_utc = get_current_week_start_utc()
-    learner_weekly_xp = db.query(
+    lesson_weekly_xp = db.query(
         func.coalesce(func.sum(UserLessonCompletion.xp_earned), 0)
     ).filter(
         UserLessonCompletion.user_id == current_user.id,
         UserLessonCompletion.completed_at >= week_start_utc
-    ).scalar()
+    ).scalar() or 0
+
+    challenge_weekly_xp = db.query(
+        func.coalesce(func.sum(ChallengeSession.xp_awarded), 0)
+    ).filter(
+        ChallengeSession.user_id == current_user.id,
+        ChallengeSession.status == "completed",
+        ChallengeSession.finished_at >= week_start_utc
+    ).scalar() or 0
+
+    learner_weekly_xp = int(lesson_weekly_xp) + int(challenge_weekly_xp)
 
     seeded_competitors = db.query(LeaderboardUser).all()
 

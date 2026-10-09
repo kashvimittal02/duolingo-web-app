@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
+from app.config import settings
 from app.models.course import Lesson, Skill
 from app.models.exercise import Exercise
 from app.models.user import User, UserStats
@@ -275,7 +276,7 @@ def complete_lesson_session(
             status="completed",
             session_token=session.session_token,
             lesson_id=session.lesson_id,
-            xp_awarded=completion.xp_earned if completion else 15,
+            xp_awarded=completion.xp_earned if completion else settings.BASE_LESSON_XP,
             total_xp=user_stats.xp if user_stats else 0,
             streak=user_stats.streak if user_stats else 1,
             is_replay=is_replay,
@@ -319,7 +320,7 @@ def complete_lesson_session(
         UserLessonCompletion.lesson_id == session.lesson_id,
     ).first()
     is_replay = prior_completion is not None
-    xp_awarded = 5 if is_replay else 15
+    xp_awarded = settings.REPLAY_LESSON_XP if is_replay else settings.BASE_LESSON_XP
 
     # Record UserLessonCompletion
     completion_record = UserLessonCompletion(

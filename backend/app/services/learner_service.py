@@ -12,6 +12,7 @@ from app.config import settings
 from app.models.user import User, UserStats
 from app.models.progress import UserSkillProgress, UserLessonCompletion
 from app.models.gamification import Achievement, UserAchievement
+from app.models.challenge import ChallengeSession
 from app.schemas.learner import (
     LearnerProfileResponse,
     LearnerStatsDTO,
@@ -99,6 +100,21 @@ def update_streak_for_user(stats: UserStats, target_date_ist: Optional[date] = N
     stats.last_streak_date = today_ist
     return stats.streak
 
+def calculate_effective_streak(stats: UserStats, target_date_ist: Optional[date] = None) -> int:
+    """
+    Computes current active streak in Asia/Kolkata timezone.
+    If the user has not practiced today or yesterday, the streak is stale and evaluates to 0.
+    """
+    tz = get_app_timezone()
+    today_ist = target_date_ist or datetime.now(tz).date()
+    last_date = stats.last_streak_date
+
+    if last_date is None:
+        return 0
+    if last_date == today_ist or last_date == today_ist - timedelta(days=1):
+        return stats.streak
+    return 0
+
 def get_learner_profile(db: Session, user_id: int) -> LearnerProfileResponse:
     """
     Retrieves full learner profile and passively calculated gamification stats.
@@ -117,29 +133,38 @@ def get_learner_profile(db: Session, user_id: int) -> LearnerProfileResponse:
     tz = get_app_timezone()
     today_ist = datetime.now(tz).date()
     has_practiced = stats.last_streak_date == today_ist
+    effective_streak = calculate_effective_streak(stats, today_ist)
 
     total_crowns = db.query(func.coalesce(func.sum(UserSkillProgress.crowns), 0)).filter(
         UserSkillProgress.user_id == user.id
     ).scalar()
 
-    # Compute today's XP in Asia/Kolkata
+    # Compute today's XP in Asia/Kolkata (both normal lesson completions and Legendary challenges)
     today_start_ist = datetime.combine(today_ist, time.min).replace(tzinfo=tz)
     today_start_utc = today_start_ist.astimezone(timezone.utc).replace(tzinfo=None)
 
-    daily_xp = db.query(func.coalesce(func.sum(UserLessonCompletion.xp_earned), 0)).filter(
+    daily_lesson_xp = db.query(func.coalesce(func.sum(UserLessonCompletion.xp_earned), 0)).filter(
         UserLessonCompletion.user_id == user.id,
         UserLessonCompletion.completed_at >= today_start_utc
     ).scalar() or 0
+
+    daily_challenge_xp = db.query(func.coalesce(func.sum(ChallengeSession.xp_awarded), 0)).filter(
+        ChallengeSession.user_id == user.id,
+        ChallengeSession.status == "completed",
+        ChallengeSession.finished_at >= today_start_utc
+    ).scalar() or 0
+
+    daily_xp = int(daily_lesson_xp) + int(daily_challenge_xp)
 
     stats_dto = LearnerStatsDTO(
         xp=stats.xp,
         hearts=effective_hearts,
         max_hearts=stats.max_hearts,
         gems=stats.gems,
-        streak=stats.streak,
+        streak=effective_streak,
         has_practiced_today=has_practiced,
         next_heart_in_seconds=next_heart_in_sec,
-        daily_xp=int(daily_xp),
+        daily_xp=daily_xp,
         daily_xp_goal=50,
     )
 

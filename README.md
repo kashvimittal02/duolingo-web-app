@@ -4,6 +4,17 @@ An original, end-to-end full-stack language learning web application inspired by
 
 ---
 
+## Live Demo
+
+- **Frontend Application**: [https://duolingo-frontend-5l9g.onrender.com/](https://duolingo-frontend-5l9g.onrender.com/)
+- **Backend API**: [https://duolingo-web-app-n2ju.onrender.com/](https://duolingo-web-app-n2ju.onrender.com/)
+- **Health Check**: [https://duolingo-web-app-n2ju.onrender.com/api/v1/health](https://duolingo-web-app-n2ju.onrender.com/api/v1/health)
+
+> [!NOTE]
+> **Render Free-Tier Ephemeral Storage Notice**: The live deployment is hosted on Render's Free tier (`plan: free` with zero paid add-ons or persistent disks). The SQLite database (`sqlite:///./duolingo.db`) is stored in the container instance filesystem. If the free service spins down due to inactivity or is restarted/redeployed, the application's runtime `lifespan` hook automatically detects an unseeded database and idempotently initializes all tables and seeds the default curriculum and learner (`duo_learner`).
+
+---
+
 ## 1. Project Overview
 
 This application provides an interactive Spanish A1 curriculum featuring:
@@ -19,10 +30,10 @@ This application provides an interactive Spanish A1 curriculum featuring:
 
 ## 2. Tech Stack
 
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Lucide Icons, Canvas-Confetti
+- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Lucide Icons, Canvas-Confetti, Google Fonts (Nunito)
 - **Backend**: Python 3.10+, FastAPI, SQLAlchemy 2.0, Pydantic v2, Uvicorn
 - **Database**: SQLite with Write-Ahead Logging (WAL mode) and enforced Foreign Keys
-- **Testing**: Pytest, Playwright (end-to-end browser automation)
+- **Testing**: Pytest (58 automated unit, API contract, concurrency, and Legendary challenge tests)
 
 ---
 
@@ -64,7 +75,126 @@ This application provides an interactive Spanish A1 curriculum featuring:
 
 ---
 
-## 4. Project Structure
+## 4. Database Schema
+
+The database architecture is built on SQLite (WAL mode, foreign keys enabled) with **16 normalized relational tables** mapped via SQLAlchemy 2.0 models. The schema strictly enforces data integrity through primary keys, foreign key cascading, compound unique constraints, and check constraints.
+
+### Mermaid Entity-Relationship (ER) Diagram
+
+```mermaid
+erDiagram
+    COURSES ||--o{ UNITS : "contains"
+    UNITS ||--o{ SKILLS : "contains"
+    SKILLS ||--o{ LESSONS : "contains"
+    SKILLS ||--o{ USER_SKILL_PROGRESS : "tracks"
+    LESSONS ||--o{ EXERCISES : "contains"
+    LESSONS ||--o{ LESSON_SESSIONS : "attempted via"
+    LESSONS ||--o{ USER_LESSON_COMPLETIONS : "completed in"
+    LESSONS ||--o{ CHALLENGE_SESSIONS : "challenged via"
+
+    USERS ||--|| USER_STATS : "has stats"
+    USERS ||--o{ USER_SKILL_PROGRESS : "progress"
+    USERS ||--o{ USER_LESSON_COMPLETIONS : "completions"
+    USERS ||--o{ USER_ACHIEVEMENTS : "unlocked"
+    USERS ||--o{ LESSON_SESSIONS : "creates"
+    USERS ||--o{ CHALLENGE_SESSIONS : "undertakes"
+
+    ACHIEVEMENTS ||--o{ USER_ACHIEVEMENTS : "awarded in"
+    LESSON_SESSIONS ||--o{ SESSION_ANSWERS : "answers"
+    LESSON_SESSIONS ||--|| USER_LESSON_COMPLETIONS : "completion"
+    EXERCISES ||--o{ SESSION_ANSWERS : "graded in"
+    EXERCISES ||--o{ CHALLENGE_ANSWERS : "evaluated in"
+    CHALLENGE_SESSIONS ||--o{ CHALLENGE_ANSWERS : "answers"
+```
+
+### Table Definitions & Specifications
+
+#### Curriculum Domain
+1. **`courses`** (`Course`)
+   - **Purpose**: Defines root language courses (e.g., Spanish A1).
+   - **Columns**: `id` (PK, int, auto), `code` (string 20, unique, index), `title` (string 100), `target_lang` (string 50).
+   - **Relationships**: `units` (1:N cascade delete-orphan).
+2. **`units`** (`Unit`)
+   - **Purpose**: Curricular sections grouping related skills with specific color themes.
+   - **Columns**: `id` (PK, int, auto), `course_id` (FK `courses.id`, int, index), `order_index` (int), `title` (string 100), `description` (text), `hex_color` (string 7, default `#58cc02`).
+   - **Constraints**: `UniqueConstraint("course_id", "order_index")`.
+   - **Relationships**: Belongs to `courses`; `skills` (1:N cascade delete-orphan).
+3. **`skills`** (`Skill`)
+   - **Purpose**: Competency nodes rendered on the learning path.
+   - **Columns**: `id` (PK, int, auto), `unit_id` (FK `units.id`, int, index), `order_index` (int), `title` (string 100), `icon_name` (string 50), `total_crown_levels` (int, default 5).
+   - **Constraints**: `UniqueConstraint("unit_id", "order_index")`.
+   - **Relationships**: Belongs to `units`; `lessons` (1:N cascade delete-orphan); `progress` (1:N with `user_skill_progress`).
+4. **`lessons`** (`Lesson`)
+   - **Purpose**: Individual playable lessons within a skill.
+   - **Columns**: `id` (PK, int, auto), `skill_id` (FK `skills.id`, int, index), `order_index` (int), `title` (string 100), `xp_reward` (int, default 15).
+   - **Constraints**: `UniqueConstraint("skill_id", "order_index")`.
+   - **Relationships**: Belongs to `skills`; `exercises` (1:N cascade delete-orphan); `completions` (1:N); `sessions` (1:N).
+5. **`exercises`** (`Exercise`)
+   - **Purpose**: Assessment questions belonging to a lesson across 5 supported exercise types.
+   - **Columns**: `id` (PK, int, auto), `lesson_id` (FK `lessons.id`, int, index), `order_index` (int), `exercise_type` (string 30: `multiple_choice`, `word_bank`, `match_pairs`, `fill_blank`, `type_answer`), `prompt` (text), `prompt_translation` (text, nullable), `canonical_answer` (text), `payload_json` (text).
+   - **Constraints**: `UniqueConstraint("lesson_id", "order_index")`.
+   - **Relationships**: Belongs to `lessons`; `session_answers` (1:N cascade delete-orphan).
+
+#### User & Gamification State
+6. **`users`** (`User`)
+   - **Purpose**: Core learner account identities.
+   - **Columns**: `id` (PK, int, auto, index), `username` (string 50, unique, index), `display_name` (string 100), `avatar_url` (string 255, nullable), `created_at` (datetime).
+   - **Relationships**: `stats` (1:1 with `user_stats`), `skill_progress` (1:N), `lesson_completions` (1:N), `sessions` (1:N), `achievements` (1:N).
+7. **`user_stats`** (`UserStats`)
+   - **Purpose**: Authoritative gamification ledger (XP, hearts, gems, streak, and regeneration timestamps).
+   - **Columns**: `id` (PK, int, auto, index), `user_id` (FK `users.id`, int, unique, index), `xp` (int, default 0), `hearts` (int, default 5), `max_hearts` (int, default 5), `gems` (int, default 500), `streak` (int, default 0), `last_streak_date` (date, nullable), `last_heart_loss_at` (datetime, nullable).
+   - **Constraints**: CheckConstraints: `xp >= 0`, `hearts >= 0 AND hearts <= max_hearts`, `gems >= 0`, `streak >= 0`.
+   - **Relationships**: Belongs to `users` (1:1).
+
+#### Lesson Session & Execution
+8. **`lesson_sessions`** (`LessonSession`)
+   - **Purpose**: Ephemeral, token-guarded lesson attempt sessions.
+   - **Columns**: `id` (PK, int, auto, index), `session_token` (string 64, unique, index), `user_id` (FK `users.id`, int, index), `lesson_id` (FK `lessons.id`, int, index), `initial_hearts` (int), `current_hearts` (int), `status` (string 20: `in_progress`, `completed`, `failed`), `started_at` (datetime), `finished_at` (datetime, nullable).
+   - **Relationships**: Belongs to `users` & `lessons`; `answers` (1:N cascade delete-orphan); `completion` (1:1 with `user_lesson_completions`).
+9. **`session_answers`** (`SessionAnswer`)
+   - **Purpose**: Immutable log of learner answer submissions within a lesson session.
+   - **Columns**: `id` (PK, int, auto, index), `session_id` (FK `lesson_sessions.id`, int, index), `exercise_id` (FK `exercises.id`, int, index), `submitted_answer` (text), `is_correct` (boolean), `answered_at` (datetime).
+   - **Constraints**: `UniqueConstraint("session_id", "exercise_id")` — strictly prevents duplicate heart deductions or repeated answers for the same exercise within a session.
+   - **Relationships**: Belongs to `lesson_sessions` & `exercises`.
+10. **`user_lesson_completions`** (`UserLessonCompletion`)
+    - **Purpose**: Permanent audit record of successful lesson completions and awarded XP.
+    - **Columns**: `id` (PK, int, auto, index), `session_id` (FK `lesson_sessions.id`, int, unique, index), `user_id` (FK `users.id`, int, index), `lesson_id` (FK `lessons.id`, int, index), `xp_earned` (int, default 15), `completed_at` (datetime).
+    - **Constraints**: Unique index on `session_id` ensures idempotent completion calls.
+    - **Relationships**: Belongs to `lesson_sessions`, `users`, and `lessons`.
+11. **`user_skill_progress`** (`UserSkillProgress`)
+    - **Purpose**: Tracks learner advancement per skill (crown levels and current lesson index).
+    - **Columns**: `id` (PK, int, auto, index), `user_id` (FK `users.id`, int, index), `skill_id` (FK `skills.id`, int, index), `crowns` (int, default 0), `current_lesson_index` (int, default 0), `is_completed` (boolean, default False).
+    - **Constraints**: `UniqueConstraint("user_id", "skill_id")`.
+    - **Relationships**: Belongs to `users` & `skills`.
+
+#### Gamification & Social
+12. **`achievements`** (`Achievement`)
+    - **Purpose**: System achievement catalog.
+    - **Columns**: `id` (PK, int, auto, index), `code` (string 50, unique, index), `title` (string 100), `description` (text), `icon_name` (string 50).
+    - **Relationships**: `user_achievements` (1:N cascade delete-orphan).
+13. **`user_achievements`** (`UserAchievement`)
+    - **Purpose**: Record of unlocked achievements per learner.
+    - **Columns**: `id` (PK, int, auto, index), `user_id` (FK `users.id`, int, index), `achievement_id` (FK `achievements.id`, int, index), `unlocked_at` (datetime).
+    - **Constraints**: `UniqueConstraint("user_id", "achievement_id")` prevents duplicate achievement unlocking.
+    - **Relationships**: Belongs to `users` & `achievements`.
+14. **`leaderboard_users`** (`LeaderboardUser`)
+    - **Purpose**: Seeded mock competitor profiles with benchmark weekly XP for league rankings.
+    - **Columns**: `id` (PK, int, auto, index), `username` (string 50, unique, index), `display_name` (string 100), `avatar_url` (string 255), `weekly_xp` (int, default 0).
+
+#### Timed "Legendary" Challenge Domain
+15. **`challenge_sessions`** (`ChallengeSession`)
+    - **Purpose**: Active or finished 90-second Timed Challenge sessions.
+    - **Columns**: `id` (PK, int, auto, index), `challenge_token` (string 64, unique, index), `user_id` (FK `users.id`, int, index), `lesson_id` (FK `lessons.id`, int, index), `time_limit_seconds` (int, default 90), `started_at` (datetime), `expires_at` (datetime), `finished_at` (datetime, nullable), `status` (string 20: `in_progress`, `completed`, `timed_out`, `failed`), `xp_awarded` (int, default 0), `is_first_completion` (boolean, default False).
+    - **Relationships**: Belongs to `users` & `lessons`; `answers` (1:N with `challenge_answers` cascade delete-orphan).
+16. **`challenge_answers`** (`ChallengeAnswer`)
+    - **Purpose**: Submissions within a timed challenge session.
+    - **Columns**: `id` (PK, int, auto, index), `challenge_id` (FK `challenge_sessions.id`, int, index), `exercise_id` (FK `exercises.id`, int, index), `submitted_answer` (text), `is_correct` (boolean), `answered_at` (datetime).
+    - **Constraints**: `UniqueConstraint("challenge_id", "exercise_id")`.
+    - **Relationships**: Belongs to `challenge_sessions` & `exercises`.
+
+---
+
+## 5. Project Structure
 
 ```
 duolingo-app/
@@ -78,7 +208,8 @@ duolingo-app/
 │   │   ├── config.py          # Application settings & environment variables
 │   │   ├── database.py        # SQLite engine with WAL pragma & session factory
 │   │   └── main.py            # FastAPI app lifecycle & CORS configuration
-│   ├── tests/                 # 57 automated unit, concurrency, and challenge tests
+│   ├── tests/                 # 58 automated unit, concurrency, and challenge tests
+│   ├── .python-version        # Pinned Python version (3.13.5) for Render deployment
 │   └── requirements.txt       # Python dependencies
 ├── frontend/
 │   ├── app/                   # Next.js App Router pages (/, /lesson/[id], /challenge/[id], /leaderboard, etc.)
@@ -100,7 +231,7 @@ duolingo-app/
 
 ---
 
-## 5. Prerequisites
+## 6. Prerequisites
 
 - **Python**: 3.10 or higher
 - **Node.js**: 18.17.0 or higher
@@ -108,7 +239,7 @@ duolingo-app/
 
 ---
 
-## 6. Installation & Setup
+## 7. Installation & Setup
 
 ### A. Backend Setup
 
@@ -175,7 +306,7 @@ duolingo-app/
 
 ---
 
-## 7. API Specification Overview
+## 8. API Specification Overview
 
 All endpoints are prefixed with `/api/v1`:
 
@@ -200,7 +331,7 @@ Interactive API documentation with request schemas and live testing is available
 
 ---
 
-## 8. Exercise Types Supported
+## 9. Exercise Types Supported
 
 The application implements all 5 required exercise types with dedicated UI components and server validators:
 
@@ -220,7 +351,7 @@ In addition to standard lessons, learners can launch a Timed Legendary Challenge
 
 ---
 
-## 9. Seeded Content & Default Learner
+## 10. Seeded Content & Default Learner
 
 The database seeder automatically configures:
 - **Default Learner**:
@@ -237,9 +368,9 @@ The database seeder automatically configures:
 
 ---
 
-## 10. Automated Tests
+## 11. Automated Tests
 
-The backend test suite contains 57 comprehensive automated tests:
+The backend test suite contains **58 comprehensive automated tests**:
 
 ```bash
 cd backend
@@ -247,9 +378,9 @@ venv\Scripts\python -m pytest -v
 ```
 
 ### Test Coverage Highlights:
-- `test_phase1_database.py` (12 tests): Relational schema integrity, foreign key cascades, unique constraints, seeder idempotency.
-- `test_phase2_apis.py` (15 tests): Passive heart regeneration without database mutation, gem deduction, free practice, course tree status transitions, weekly leaderboard XP aggregation, Asia/Kolkata streak continuation.
-- `test_phase3_lesson_engine.py` (24 tests):
+- `test_phase1_database.py` (8 tests): Relational schema integrity, foreign key cascades, unique constraints, seeder idempotency.
+- `test_phase2_apis.py` (21 tests): Passive heart regeneration without database mutation, gem deduction, free practice, course tree status transitions, weekly leaderboard XP aggregation, Asia/Kolkata active and stale streak evaluation.
+- `test_phase3_lesson_engine.py` (23 tests):
   - Lock enforcement: 403 on locked lessons or 0 hearts.
   - Payload sanitization: verified absence of `canonical_answer`, `accepted_answers`, `answer_key`.
   - Server grading for all 5 exercise types.
@@ -258,11 +389,12 @@ venv\Scripts\python -m pytest -v
   - 90-second server countdown deadline enforcement.
   - Late answer rejection past server expiry.
   - First-time Legendary bonus (+20 XP) and anti-farming replay protection (0 XP).
+  - Daily and weekly leaderboard XP aggregation from challenge completions.
   - Idempotent completion and session isolation from normal lessons.
 
 ---
 
-## 11. Environment Configuration
+## 12. Environment Configuration
 
 ### Backend Variables (`backend/.env` or system environment):
 ```bash
@@ -288,7 +420,7 @@ NEXT_PUBLIC_API_URL=
 
 ---
 
-## 12. Deployment Instructions
+## 13. Deployment Instructions
 
 ### Render Free Tier Deployment (Automated Blueprint)
 The project includes a root `render.yaml` Blueprint configured 100% for **Render Free tier** (`plan: free` for both services, zero cost, no persistent disks or paid add-ons required):
@@ -311,7 +443,7 @@ The project includes a root `render.yaml` Blueprint configured 100% for **Render
 
 ---
 
-## 13. Known Assumptions & Scope Decisions
+## 14. Known Assumptions & Scope Decisions
 
 - **Authentication**: As permitted by the assignment specification, authentication defaults to the seeded learner `duo_learner` without requiring user registration or passwords.
 - **Audio / TTS & Sound Effects**: Fully implemented client-side using native browser Web Speech API (`window.speechSynthesis` prioritizing `es-ES` Spanish pronunciation) and the Web Audio API (harmonic synthesizer for correct/incorrect responses and completion celebrations). Includes interactive audio replay buttons and global sound muting toggle.

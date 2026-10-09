@@ -51,6 +51,44 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       style={{ transform: `translateX(${offset}px)` }}
     >
       <div className="relative">
+        {/* Floating START Bubble for active skill */}
+        {!isLocked && !isCompleted && (
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-20 pointer-events-none whitespace-nowrap animate-bounce">
+            <span className="bg-white dark:bg-[#202f36] text-duo-green dark:text-duo-green border-2 border-duo-green px-2.5 py-0.5 rounded-lg text-xs font-black uppercase tracking-wider shadow-sm">
+              START
+            </span>
+          </div>
+        )}
+
+        {/* Circular Progress Ring for active skill */}
+        {!isLocked && !isCompleted && (
+          <svg className="absolute -top-1.5 -left-1.5 w-[92px] h-[92px] -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              className="text-gray-200/80 dark:text-[#25363f]"
+              strokeWidth="5"
+              stroke="currentColor"
+              fill="transparent"
+            />
+            {skill.crowns > 0 && (
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                className="text-duo-yellow"
+                strokeWidth="5"
+                strokeDasharray={282.74}
+                strokeDashoffset={282.74 * (1 - (skill.crowns / Math.max(1, skill.total_crown_levels)))}
+                strokeLinecap="round"
+                stroke="currentColor"
+                fill="transparent"
+              />
+            )}
+          </svg>
+        )}
+
         {/* Crown Badge */}
         {!isLocked && (
           <div className="absolute -top-2 -right-2 z-10 flex items-center gap-0.5 bg-duo-yellow border-2 border-white dark:border-[#131f24] px-2 py-0.5 rounded-full shadow-sm text-xs font-black text-amber-900">

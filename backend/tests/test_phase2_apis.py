@@ -4,7 +4,7 @@ from app.models.user import User, UserStats
 from app.models.course import Skill, Lesson
 from app.models.progress import UserLessonCompletion
 from app.models.session import LessonSession
-from app.services.learner_service import update_streak_for_user
+from app.services.learner_service import update_streak_for_user, calculate_effective_streak
 from app.services.leaderboard_service import get_current_week_start_utc
 from app.config import settings
 
@@ -345,6 +345,32 @@ def test_streak_continuation_and_break():
     assert broken_streak == 1
     assert stats.streak == 1
     assert stats.last_streak_date == date(2026, 10, 11)
+
+def test_stale_streak_evaluates_to_zero():
+    """
+    Verify calculate_effective_streak:
+    - If user practiced today: streak is active
+    - If user practiced yesterday: streak is active
+    - If user practiced 2+ days ago: streak is stale and evaluates to 0
+    - If user has never practiced: evaluates to 0
+    """
+    today = date(2026, 10, 15)
+
+    # 1. Practiced today -> active
+    stats_today = UserStats(streak=5, last_streak_date=today)
+    assert calculate_effective_streak(stats_today, target_date_ist=today) == 5
+
+    # 2. Practiced yesterday -> active (eligible to continue today)
+    stats_yesterday = UserStats(streak=5, last_streak_date=date(2026, 10, 14))
+    assert calculate_effective_streak(stats_yesterday, target_date_ist=today) == 5
+
+    # 3. Practiced 2 days ago (missed yesterday) -> stale, evaluates to 0
+    stats_stale = UserStats(streak=5, last_streak_date=date(2026, 10, 13))
+    assert calculate_effective_streak(stats_stale, target_date_ist=today) == 0
+
+    # 4. Never practiced -> 0
+    stats_none = UserStats(streak=0, last_streak_date=None)
+    assert calculate_effective_streak(stats_none, target_date_ist=today) == 0
 
 # --- LEADERBOARD WEEKLY XP TESTS ---
 

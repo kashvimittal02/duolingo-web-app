@@ -101,6 +101,12 @@ def test_challenge_completion_awards_first_time_bonus_and_prevents_farming(clien
     user = seeded_db.query(User).filter(User.username == "duo_learner").first()
     initial_xp = user.stats.xp
 
+    # Check pre-challenge daily and weekly XP
+    pre_profile = client.get("/api/v1/learner/me").json()
+    pre_daily_xp = pre_profile["stats"]["daily_xp"]
+    pre_lb = client.get("/api/v1/leaderboard").json()
+    pre_lb_xp = next(e["xp"] for e in pre_lb["rankings"] if e["is_current_user"])
+
     # 1. Start Challenge 1
     start_res = client.post("/api/v1/challenges/1/start")
     assert start_res.status_code == 200
@@ -130,6 +136,13 @@ def test_challenge_completion_awards_first_time_bonus_and_prevents_farming(clien
     assert comp_data["xp_awarded"] == 20
     assert comp_data["is_first_completion"] is True
     assert comp_data["total_xp"] == initial_xp + 20
+
+    # Verify daily and weekly leaderboard XP reflect the +20 challenge bonus
+    post_profile = client.get("/api/v1/learner/me").json()
+    assert post_profile["stats"]["daily_xp"] == pre_daily_xp + 20
+    post_lb = client.get("/api/v1/leaderboard").json()
+    post_lb_xp = next(e["xp"] for e in post_lb["rankings"] if e["is_current_user"])
+    assert post_lb_xp == pre_lb_xp + 20
 
     # Idempotent completion check
     idemp_res = client.post(f"/api/v1/challenges/sessions/{token1}/complete")
