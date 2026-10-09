@@ -84,9 +84,16 @@ export default function LeaderboardPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-1">
               Weekly Leaderboard
             </h1>
-            <p className="text-sm font-bold text-gray-500 dark:text-gray-400 max-w-sm">
+            <p className="text-sm font-bold text-gray-500 dark:text-gray-400 max-w-sm mb-2">
               Earn XP by completing lessons. Top learners advance each week!
             </p>
+            {leaderboard && (
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-black border border-amber-300/60 dark:border-amber-700/60">
+                <span>🏆 {leaderboard.league_name}</span>
+                <span>•</span>
+                <span>⏳ {leaderboard.days_remaining} {leaderboard.days_remaining === 1 ? "day" : "days"} left</span>
+              </div>
+            )}
           </div>
 
           {loading ? (

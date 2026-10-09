@@ -88,8 +88,19 @@ def get_weekly_leaderboard(db: Session, current_user_id: int) -> LeaderboardResp
             is_current_user=item["is_current_user"]
         ))
 
+    # Dynamically compute days remaining in current weekly league (Monday 00:00 to Sunday 23:59:59 IST)
+    tz = get_app_timezone()
+    now_ist = datetime.now(tz)
+    start_of_week_ist = (now_ist - timedelta(days=now_ist.weekday())).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    end_of_week_ist = start_of_week_ist + timedelta(days=7)
+    time_left = end_of_week_ist - now_ist
+    total_seconds = max(0, time_left.total_seconds())
+    days_remaining = max(1, min(7, int(total_seconds // 86400) + (1 if (total_seconds % 86400) > 0 else 0)))
+
     return LeaderboardResponse(
         league_name="Bronze League",
-        days_remaining=3,
+        days_remaining=days_remaining,
         rankings=rankings
     )

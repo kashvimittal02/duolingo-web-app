@@ -192,7 +192,7 @@ export default function MorePage() {
                       Full-Stack Duolingo Implementation
                     </h3>
                     <p className="text-xs font-bold text-gray-400">
-                      SDE Assignment • 100% Server Authoritative Architecture
+                      Language Learning Engine • 100% Server Authoritative Architecture
                     </p>
                   </div>
                 </div>

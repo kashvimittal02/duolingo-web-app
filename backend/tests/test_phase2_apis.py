@@ -383,6 +383,7 @@ def test_leaderboard_uses_weekly_xp_not_lifetime_xp(client, seeded_db):
     response = client.get("/api/v1/leaderboard")
     assert response.status_code == 200
     data = response.json()
+    assert 1 <= data["days_remaining"] <= 7
 
     rankings = data["rankings"]
     assert len(rankings) == 10

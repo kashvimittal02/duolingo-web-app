@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from app.database import get_utc_now
 from app.models.course import Lesson
 from app.models.exercise import Exercise
 from app.models.user import User, UserStats
@@ -51,7 +52,7 @@ def start_challenge_session(
 
     # Cryptographically secure random token
     token = secrets.token_urlsafe(32)
-    started_at = datetime.utcnow()
+    started_at = get_utc_now()
     expires_at = started_at + timedelta(seconds=time_limit_seconds)
 
     challenge = ChallengeSession(
@@ -87,7 +88,7 @@ def start_challenge_session(
         for ex in exercises
     ]
 
-    remaining_seconds = max(0, int((expires_at - datetime.utcnow()).total_seconds()))
+    remaining_seconds = max(0, int((expires_at - get_utc_now()).total_seconds()))
 
     return ChallengeStartResponse(
         challenge_token=challenge.challenge_token,
@@ -121,7 +122,7 @@ def get_challenge_session(
     if challenge.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have access to this challenge session")
 
-    now = datetime.utcnow()
+    now = get_utc_now()
     is_expired = now > challenge.expires_at
 
     # Auto-expire if time has elapsed
@@ -194,7 +195,7 @@ def submit_challenge_answer(
     if challenge.user_id != user_id:
         raise HTTPException(status_code=403, detail="You do not have access to this challenge session")
 
-    now = datetime.utcnow()
+    now = get_utc_now()
 
     # Server-authoritative deadline check
     if now > challenge.expires_at:
@@ -344,7 +345,7 @@ def complete_challenge_session(
             is_idempotent=True,
         )
 
-    now = datetime.utcnow()
+    now = get_utc_now()
 
     # Deadline validation
     if now > challenge.expires_at:

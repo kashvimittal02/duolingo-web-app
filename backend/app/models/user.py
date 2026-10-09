@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Date, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import Base, get_utc_now
 
 class User(Base):
     __tablename__ = "users"
@@ -10,7 +10,7 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False, index=True)
     display_name = Column(String(100), nullable=False)
     avatar_url = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=get_utc_now, nullable=False)
 
     # Relationships
     stats = relationship("UserStats", back_populates="user", uselist=False, cascade="all, delete-orphan")

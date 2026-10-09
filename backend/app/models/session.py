@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import Base, get_utc_now
 
 class LessonSession(Base):
     __tablename__ = "lesson_sessions"
@@ -13,7 +13,7 @@ class LessonSession(Base):
     initial_hearts = Column(Integer, nullable=False)
     current_hearts = Column(Integer, nullable=False)
     status = Column(String(20), default="in_progress", nullable=False)  # in_progress, completed, failed
-    started_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    started_at = Column(DateTime, default=get_utc_now, nullable=False)
     finished_at = Column(DateTime, nullable=True)
 
     user = relationship("User", back_populates="sessions")
@@ -29,7 +29,7 @@ class SessionAnswer(Base):
     exercise_id = Column(Integer, ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False, index=True)
     submitted_answer = Column(Text, nullable=False)
     is_correct = Column(Boolean, nullable=False)
-    answered_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    answered_at = Column(DateTime, default=get_utc_now, nullable=False)
 
     __table_args__ = (
         UniqueConstraint("session_id", "exercise_id", name="uq_session_exercise"),

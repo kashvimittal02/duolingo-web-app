@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Compass, Trophy, Target, ShoppingBag, User, MoreHorizontal, Sparkles } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -59,11 +58,10 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      {/* Theme Control & Footer Info */}
-      <div className="pt-3 border-t border-gray-100 dark:border-[#2b3a42] flex flex-col gap-3">
-        <ThemeToggle variant="segmented" />
-        <div className="text-xs text-gray-400 dark:text-gray-500 font-bold text-center">
-          Spanish A1 • SDE Fullstack
+      {/* Footer Info */}
+      <div className="pt-3 border-t border-gray-100 dark:border-[#2b3a42] flex flex-col gap-1">
+        <div className="text-xs text-gray-400 dark:text-gray-500 font-extrabold text-center uppercase tracking-wider">
+          Spanish A1
         </div>
       </div>
     </aside>

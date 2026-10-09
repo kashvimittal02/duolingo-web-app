@@ -2,7 +2,13 @@
 
 import React from "react";
 
-export type MascotExpression = "happy" | "cheering" | "sad" | "sleeping";
+export type MascotExpression =
+  | "happy"
+  | "cheering"
+  | "encouraging"
+  | "sad"
+  | "concerned"
+  | "sleeping";
 
 interface LingoMascotProps {
   expression?: MascotExpression;
@@ -62,7 +68,7 @@ export const LingoMascot: React.FC<LingoMascotProps> = ({
           {/* Left Ear */}
           <path
             d={
-              expression === "sad"
+              expression === "sad" || expression === "concerned"
                 ? "M 32 46 Q 16 60 12 70 Q 24 66 38 56 Z" // Drooped
                 : "M 28 50 Q 16 14 36 22 Q 44 32 46 48 Z" // Perky
             }
@@ -74,7 +80,7 @@ export const LingoMascot: React.FC<LingoMascotProps> = ({
           {/* Left Inner Ear */}
           <path
             d={
-              expression === "sad"
+              expression === "sad" || expression === "concerned"
                 ? "M 30 50 Q 20 62 18 68 Q 24 65 34 56 Z"
                 : "M 30 46 Q 22 22 36 28 Q 40 36 42 46 Z"
             }
@@ -84,7 +90,7 @@ export const LingoMascot: React.FC<LingoMascotProps> = ({
           {/* Right Ear */}
           <path
             d={
-              expression === "sad"
+              expression === "sad" || expression === "concerned"
                 ? "M 88 46 Q 104 60 108 70 Q 96 66 82 56 Z" // Drooped
                 : "M 92 50 Q 104 14 84 22 Q 76 32 74 48 Z" // Perky
             }
@@ -96,7 +102,7 @@ export const LingoMascot: React.FC<LingoMascotProps> = ({
           {/* Right Inner Ear */}
           <path
             d={
-              expression === "sad"
+              expression === "sad" || expression === "concerned"
                 ? "M 90 50 Q 100 62 102 68 Q 96 65 86 56 Z"
                 : "M 90 46 Q 98 22 84 28 Q 80 36 78 46 Z"
             }
@@ -190,7 +196,51 @@ export const LingoMascot: React.FC<LingoMascotProps> = ({
             </g>
           )}
 
-          {/* 3. SAD */}
+          {/* 3. ENCOURAGING */}
+          {expression === "encouraging" && (
+            <g>
+              {/* Left Eye: Confident smiling wink arc */}
+              <path
+                d="M 38 56 Q 45 49 52 56"
+                stroke="#1e3a12"
+                strokeWidth="4"
+                strokeLinecap="round"
+                fill="none"
+              />
+              {/* Right Eye: Wide alert sparkling eye */}
+              <circle cx="74" cy="54" r="6" fill="#1e3a12" />
+              <circle cx="72" cy="52" r="2.2" fill="#ffffff" />
+              <circle cx="76" cy="55" r="1.2" fill="#ffffff" />
+
+              {/* Little nose */}
+              <ellipse cx="60" cy="62" rx="3.5" ry="2.5" fill="#1e3a12" />
+
+              {/* Confident encouraging toothy grin */}
+              <path
+                d="M 52 67 Q 60 78 68 67"
+                stroke="#1e3a12"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                fill="#ffffff"
+              />
+
+              {/* Raised encouraging fist pump / paw */}
+              <g>
+                <ellipse cx="98" cy="48" rx="7" ry="9" fill="#58cc02" stroke="#46a302" strokeWidth="2.5" />
+                <path
+                  d="M 96 42 Q 98 36 102 38 Q 104 42 102 46 Z"
+                  fill="#58cc02"
+                  stroke="#46a302"
+                  strokeWidth="2"
+                />
+              </g>
+
+              {/* Sparkles of encouragement */}
+              <path d="M 106 30 L 108 34 L 112 35 L 108 37 L 106 41 L 104 37 L 100 35 L 104 34 Z" fill="#ffc800" />
+            </g>
+          )}
+
+          {/* 4. SAD */}
           {expression === "sad" && (
             <g>
               {/* Drooped sorrowful eyebrows */}
@@ -223,7 +273,39 @@ export const LingoMascot: React.FC<LingoMascotProps> = ({
             </g>
           )}
 
-          {/* 4. SLEEPING */}
+          {/* 5. CONCERNED */}
+          {expression === "concerned" && (
+            <g>
+              {/* Worried slanted eyebrows (higher towards middle) */}
+              <path d="M 38 46 Q 44 49 50 52" stroke="#1e3a12" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 70 52 Q 76 49 82 46" stroke="#1e3a12" strokeWidth="2.5" strokeLinecap="round" />
+
+              {/* Wide distressed pupils */}
+              <circle cx="46" cy="57" r="5.5" fill="#1e3a12" />
+              <circle cx="47.5" cy="55.5" r="2.2" fill="#ffffff" />
+
+              <circle cx="74" cy="57" r="5.5" fill="#1e3a12" />
+              <circle cx="72.5" cy="55.5" r="2.2" fill="#ffffff" />
+
+              {/* Little nose */}
+              <ellipse cx="60" cy="64" rx="3.5" ry="2.5" fill="#1e3a12" />
+
+              {/* Worried little 'o' mouth */}
+              <ellipse cx="60" cy="73" rx="4.5" ry="5.5" fill="#541b18" stroke="#1e3a12" strokeWidth="2" />
+
+              {/* Worry paws held to cheeks */}
+              <ellipse cx="34" cy="72" rx="7" ry="6" fill="#58cc02" stroke="#46a302" strokeWidth="2.5" />
+              <ellipse cx="86" cy="72" rx="7" ry="6" fill="#58cc02" stroke="#46a302" strokeWidth="2.5" />
+
+              {/* Anxious sweat bead */}
+              <path
+                d="M 28 42 C 28 40 30 37 30 37 C 30 37 32 40 32 42 C 32 43.5 31 44.5 30 44.5 C 29 44.5 28 43.5 28 42 Z"
+                fill="#2b70c9"
+              />
+            </g>
+          )}
+
+          {/* 6. SLEEPING */}
           {expression === "sleeping" && (
             <g>
               {/* Peaceful closed resting eyes */}

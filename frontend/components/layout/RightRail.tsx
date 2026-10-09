@@ -178,7 +178,7 @@ export const RightRail: React.FC<RightRailProps> = ({ profile }) => {
             ¡Sigue practicando! Consistency is key to mastery.
           </p>
         </div>
-        <LingoMascot expression="happy" size="sm" />
+        <LingoMascot expression="encouraging" size="sm" />
       </div>
     </aside>
   );

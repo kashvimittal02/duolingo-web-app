@@ -6,6 +6,7 @@ import { TopHeader } from "@/components/layout/TopHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { UnitHeader } from "@/components/path/UnitHeader";
 import { SkillNode } from "@/components/path/SkillNode";
+import { PathConnector } from "@/components/path/PathConnector";
 import { LessonModal } from "@/components/path/LessonModal";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -91,15 +92,27 @@ export default function LearningPathPage() {
                     <div className="flex flex-col items-center py-4 relative">
                       {unit.skills.map((skill, sIdx) => {
                         const offset = pathOffsets[sIdx % pathOffsets.length];
+                        const nextSkill = unit.skills[sIdx + 1];
+                        const nextOffset = nextSkill
+                          ? pathOffsets[(sIdx + 1) % pathOffsets.length]
+                          : 0;
 
                         return (
-                          <SkillNode
-                            key={skill.id}
-                            skill={skill}
-                            unitColor={unit.hex_color}
-                            offset={offset}
-                            onClick={() => setSelectedSkill(skill)}
-                          />
+                          <React.Fragment key={skill.id}>
+                            <SkillNode
+                              skill={skill}
+                              unitColor={unit.hex_color}
+                              offset={offset}
+                              onClick={() => setSelectedSkill(skill)}
+                            />
+                            {nextSkill && (
+                              <PathConnector
+                                fromOffset={offset}
+                                toOffset={nextOffset}
+                                isUnlocked={skill.status === "completed"}
+                              />
+                            )}
+                          </React.Fragment>
                         );
                       })}
                     </div>

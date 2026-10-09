@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, Boolean, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import Base, get_utc_now
 
 class UserLessonCompletion(Base):
     __tablename__ = "user_lesson_completions"
@@ -11,7 +11,7 @@ class UserLessonCompletion(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     lesson_id = Column(Integer, ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False, index=True)
     xp_earned = Column(Integer, default=15, nullable=False)
-    completed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    completed_at = Column(DateTime, default=get_utc_now, nullable=False)
 
     session = relationship("LessonSession", back_populates="completion")
     user = relationship("User", back_populates="lesson_completions")

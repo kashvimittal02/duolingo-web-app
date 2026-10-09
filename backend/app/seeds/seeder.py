@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 from sqlalchemy.orm import Session
-from app.database import engine, Base, SessionLocal
+from app.database import engine, Base, SessionLocal, get_utc_now
 from app.models.user import User, UserStats
 from app.models.course import Course, Unit, Skill, Lesson
 from app.models.exercise import Exercise
@@ -116,7 +116,7 @@ def seed_database(db: Session, reset: bool = False):
             username=DEFAULT_LEARNER_DATA["username"],
             display_name=DEFAULT_LEARNER_DATA["display_name"],
             avatar_url=DEFAULT_LEARNER_DATA["avatar_url"],
-            created_at=datetime.utcnow() - timedelta(days=14)
+            created_at=get_utc_now() - timedelta(days=14)
         )
         db.add(learner)
         db.flush()
@@ -225,7 +225,7 @@ def seed_database(db: Session, reset: bool = False):
                 db.add(UserAchievement(
                     user_id=learner.id,
                     achievement_id=ach.id,
-                    unlocked_at=datetime.utcnow() - timedelta(days=2)
+                    unlocked_at=get_utc_now() - timedelta(days=2)
                 ))
 
         db.commit()

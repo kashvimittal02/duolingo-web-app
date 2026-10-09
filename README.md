@@ -13,7 +13,11 @@ An original, end-to-end full-stack language learning web application inspired by
 - **Health Check**: [https://duolingo-web-app-n2ju.onrender.com/api/v1/health](https://duolingo-web-app-n2ju.onrender.com/api/v1/health)
 
 > [!NOTE]
-> **Render Free-Tier Ephemeral Storage Notice**: The live deployment is hosted on Render's Free tier (`plan: free` with zero paid add-ons or persistent disks). The SQLite database (`sqlite:///./duolingo.db`) is stored in the container instance filesystem. If the free service spins down due to inactivity or is restarted/redeployed, the application's runtime `lifespan` hook automatically detects an unseeded database and idempotently initializes all tables and seeds the default curriculum and learner (`duo_learner`).
+> **Render Free-Tier SQLite Persistence Boundary**:
+> - **Survives Browser Navigation & Refreshes**: All learner actions, XP gains, heart deductions, streak updates, and completions are stored server-side in SQLite (`sqlite:///./duolingo.db`) and immediately persist across browser page refreshes and user sessions.
+> - **Survives Free Inactivity Sleep/Wake Cycles**: During typical Render Free inactivity spin-downs, the existing container filesystem remains intact; when traffic arrives, the service wakes up with all accumulated user data intact.
+> - **Resets on Container Redeploys / Restarts**: Because Render Free tier provides ephemeral container storage without persistent disks, manual redeploys or Render platform instance recreations start with a fresh container. The backend's idempotent `lifespan` startup hook detects the blank database and automatically initializes all tables and seeds the default curriculum and learner (`duo_learner`) without crashes or 500 errors.
+> - **Permanent Production Persistence Pathway**: Indefinite persistence across container redeploys would require attaching a Render Persistent Disk (available on Render's paid Starter plan at $7/month + $0.25/GB/month) or migrating to managed PostgreSQL. In accordance with assignment instructions to remain strictly on free-tier services with zero billing, ephemeral SQLite with automatic initialization was selected.
 
 ---
 
@@ -214,12 +218,13 @@ duolingo-app/
 │   ├── .python-version        # Pinned Python version (3.13.5) for Render deployment
 │   └── requirements.txt       # Python dependencies
 ├── frontend/
-│   ├── app/                   # Next.js App Router pages (/, /lesson/[id], /challenge/[id], /leaderboard, etc.)
+│   ├── app/                   # Next.js App Router pages (/, /lesson/[id], /challenge/[id], /leaderboard, /quests, /shop, /profile, /settings, /more)
 │   ├── components/
 │   │   ├── layout/            # TopHeader, Sidebar, BottomNav
 │   │   ├── lesson/            # LessonHeader, FeedbackBar, Complete/Failed modals
 │   │   │   └── exercises/     # Renderers for all 5 exercise types
-│   │   ├── path/              # UnitHeader, SkillNode, LessonModal
+│   │   ├── mascot/            # Original SVG mascot ("Pepito") with 6 emotional states
+│   │   ├── path/              # UnitHeader, SkillNode, LessonModal, PathConnector
 │   │   ├── theme/             # ThemeProvider & Dark Mode toggle
 │   │   └── ui/                # Tactile 3D Buttons, Cards, Modals, ProgressBars, AudioButton
 │   ├── lib/                   # API client (lib/api.ts), types (lib/types.ts), audio (lib/audio.ts)
@@ -327,7 +332,7 @@ All endpoints are prefixed with `/api/v1`:
 | `GET` | `/challenges/sessions/{challenge_token}` | Authoritative challenge status, remaining countdown seconds, and expiry state | Session owner |
 | `POST` | `/challenges/sessions/{challenge_token}/answer` | Evaluates challenge answer; strictly rejects late submissions past 90s server deadline | Session owner |
 | `POST` | `/challenges/sessions/{challenge_token}/complete` | Finalizes challenge; awards +20 XP on first completion / 0 XP on replay; idempotent | Session owner |
-| `GET` | `/leaderboard` | Weekly leaderboard standings (Sunday-to-Saturday XP) | Authoritative user |
+| `GET` | `/leaderboard` | Weekly leaderboard standings with dynamic days remaining (Monday-to-Sunday league window) | Authoritative user |
 
 Interactive API documentation with request schemas and live testing is available at `http://127.0.0.1:8000/docs`.
 
@@ -434,10 +439,13 @@ The project includes a root `render.yaml` Blueprint configured 100% for **Render
    - Render automatically provisions:
      - `duolingo-backend`: Python Web Service (`plan: free`, `rootDir: backend`, `startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT`).
      - `duolingo-frontend`: Node.js Web Service (`plan: free`, `rootDir: frontend`, `startCommand: npm run start`).
-2. **Ephemeral SQLite on Render Free**:
-   - Render Free tier web services use an ephemeral filesystem (`DATABASE_URL=sqlite:///./duolingo.db`).
-   - Persistent disks are not available on the free tier. When the free backend service restarts or wakes from inactivity spin-down, the application's runtime `lifespan` hook automatically checks if the database is empty and idempotently initializes the schema and seeds the default curriculum and learner (`duo_learner`).
-   - No build-time database generation or paid database migrations are required.
+2. **Ephemeral SQLite on Render Free & Persistence Boundaries**:
+   - Render Free tier web services utilize an ephemeral container filesystem (`DATABASE_URL=sqlite:///./duolingo.db`).
+   - **Page Reloads**: Learner XP, streaks, hearts, crowns, and completed lessons persist across page reloads because all transactions are committed to the backend SQLite database.
+   - **Inactivity Sleep/Wake**: Container filesystems persist across routine idle spin-downs; waking up preserves ongoing learner state.
+   - **Container Restarts/Redeploys**: Because persistent disks are not supported on Render Free tier, service redeploys provision a new container instance. The backend's non-destructive `lifespan` startup hook detects the fresh database and automatically initializes tables and seeds default curriculum and learner data (`duo_learner`) with zero downtime or crash errors.
+   - **Production Disk Upgrade**: To achieve 100% durable persistence across redeploys, Render requires an active persistent disk on their paid Starter plan ($7/mo instance + $0.25/GB/mo storage). In strict adherence to assignment requirements prohibiting paid cloud add-ons, ephemeral SQLite with automatic initialization was maintained.
+   - No build-time database generation or external database migrations are required.
 3. **Networking & CORS**:
    - `BACKEND_INTERNAL_URL` is automatically wired via Render's service discovery (`property: host`).
    - The Next.js reverse proxy (`/api/:path*`) routes client traffic securely to the FastAPI backend without exposing localhost.

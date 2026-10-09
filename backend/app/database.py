@@ -1,7 +1,12 @@
+from datetime import datetime, timezone
 from pathlib import Path
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 from app.config import settings
+
+def get_utc_now() -> datetime:
+    """Returns current naive UTC datetime for cross-platform SQLite compatibility (Python 3.12+ safe)."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 # Ensure target directory exists for SQLite database URL
 if settings.DATABASE_URL.startswith("sqlite:///"):

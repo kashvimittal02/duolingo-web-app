@@ -51,12 +51,13 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       style={{ transform: `translateX(${offset}px)` }}
     >
       <div className="relative">
-        {/* Floating START Bubble for active skill */}
+        {/* Floating START Bubble for active skill with pointer */}
         {!isLocked && !isCompleted && (
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-20 pointer-events-none whitespace-nowrap animate-bounce">
-            <span className="bg-white dark:bg-[#202f36] text-duo-green dark:text-duo-green border-2 border-duo-green px-2.5 py-0.5 rounded-lg text-xs font-black uppercase tracking-wider shadow-sm">
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20 pointer-events-none whitespace-nowrap animate-bounce flex flex-col items-center">
+            <span className="bg-white dark:bg-[#1a2c35] text-duo-green border-2 border-duo-green px-3 py-0.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-md">
               START
             </span>
+            <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-duo-green -mt-[1px]" />
           </div>
         )}
 

@@ -57,7 +57,7 @@ export const LessonFailedModal: React.FC<LessonFailedModalProps> = ({
       maxWidth="md"
     >
       <div className="flex flex-col items-center text-center p-2">
-        <LingoMascot expression="sad" size="lg" className="mb-3" />
+        <LingoMascot expression="concerned" size="lg" className="mb-3" />
 
         <h2 className="text-2xl sm:text-3xl font-black text-gray-800 dark:text-white mb-2">
           You ran out of hearts!

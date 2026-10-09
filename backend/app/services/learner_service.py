@@ -9,6 +9,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.config import settings
+from app.database import get_utc_now
 from app.models.user import User, UserStats
 from app.models.progress import UserSkillProgress, UserLessonCompletion
 from app.models.gamification import Achievement, UserAchievement
@@ -39,7 +40,7 @@ def calculate_passive_hearts(stats: UserStats, now: Optional[datetime] = None) -
     if stats.hearts >= stats.max_hearts:
         return stats.max_hearts, None
 
-    current_time = now or datetime.utcnow()
+    current_time = now or get_utc_now()
     last_loss = stats.last_heart_loss_at or current_time
     elapsed = max(0.0, (current_time - last_loss).total_seconds())
 
@@ -62,7 +63,7 @@ def sync_hearts_on_mutation(stats: UserStats, now: Optional[datetime] = None) ->
         stats.last_heart_loss_at = None
         return
 
-    current_time = now or datetime.utcnow()
+    current_time = now or get_utc_now()
     last_loss = stats.last_heart_loss_at or current_time
     elapsed = max(0.0, (current_time - last_loss).total_seconds())
     regen_interval = float(settings.HEART_REGEN_SECONDS)

@@ -8,6 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from app.config import settings
+from app.database import get_utc_now
 from app.models.course import Lesson, Skill
 from app.models.exercise import Exercise
 from app.models.user import User, UserStats
@@ -72,7 +73,7 @@ def start_lesson_session(db: Session, user_id: int, lesson_id: int) -> LessonSta
         initial_hearts=user.stats.hearts,
         current_hearts=user.stats.hearts,
         status="in_progress",
-        started_at=datetime.utcnow(),
+        started_at=get_utc_now(),
     )
     db.add(new_session)
     db.commit()
@@ -174,7 +175,7 @@ def submit_session_answer(
                 exercise_id=exercise_id,
                 submitted_answer=json.dumps(answer_payload),
                 is_correct=is_correct,
-                answered_at=datetime.utcnow(),
+                answered_at=get_utc_now(),
             )
             db.add(answer_record)
             db.flush()
@@ -210,7 +211,7 @@ def submit_session_answer(
         if not is_correct:
             user_stats.hearts = max(0, user_stats.hearts - 1)
             if user_stats.last_heart_loss_at is None:
-                user_stats.last_heart_loss_at = datetime.utcnow()
+                user_stats.last_heart_loss_at = get_utc_now()
 
         # 3. Synchronize session snapshot to authoritative user_stats.hearts
         session.current_hearts = user_stats.hearts
@@ -218,7 +219,7 @@ def submit_session_answer(
         # 4. If resulting hearts reach 0, mark session as failed
         if session.current_hearts == 0:
             session.status = "failed"
-            session.finished_at = datetime.utcnow()
+            session.finished_at = get_utc_now()
 
     db.commit()
     db.refresh(session)
@@ -298,7 +299,7 @@ def complete_lesson_session(
         )
 
     # Atomic conditional update for SQLite concurrency
-    now_dt = datetime.utcnow()
+    now_dt = get_utc_now()
     result = db.execute(
         text(
             "UPDATE lesson_sessions SET status = 'completed', finished_at = :finished_at "
